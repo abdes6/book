@@ -5,14 +5,14 @@
         <div class="card mb-3">
             <div class="card-header">筛选</div>
             <div class="card-body">
-                <h6>分类</h6>
+                <h6 class="text-secondary mb-2">分类</h6>
                 <div class="list-group list-group-flush mb-3">
                     <a href="{{ url_for('main.book_list', status=current_status, q=q) }}" class="list-group-item list-group-item-action {{ 'active' if not current_category }}">全部</a>
                     {% for c in categories %}
                     <a href="{{ url_for('main.book_list', category=c.id, status=current_status, q=q) }}" class="list-group-item list-group-item-action {{ 'active' if current_category==c.id }}">{{ c.name }}</a>
                     {% endfor %}
                 </div>
-                <h6>状态</h6>
+                <h6 class="text-secondary mb-2">状态</h6>
                 <div class="list-group list-group-flush">
                     {% set status_opts = [('', '全部'), ('reading', '在读'), ('done', '读完')] %}
                     {% for k, v in status_opts %}
@@ -25,19 +25,23 @@
     <div class="col-md-9">
         <div class="row">
             {% for book in pagination.items %}
-            <div class="col-md-4 col-6 mb-3">
+            <div class="col-md-3 col-6 mb-3">
                 <div class="card h-100">
-                    {% if book.cover_url %}<img src="{{ book.cover_url }}" class="card-img-top" style="width:100%;aspect-ratio:3/4;object-fit:cover;">{% endif %}
+                    {% if book.cover_url %}
+                    <div class="book-cover-wrapper">
+                        <img src="{{ book.cover_url }}" alt="{{ book.title }}">
+                    </div>
+                    {% endif %}
                     <div class="card-body">
-                        <h6>{{ book.title }}</h6>
-                        <p class="small text-muted">{{ book.author or '' }}</p>
+                        <h6 class="text-truncate">{{ book.title }}</h6>
+                        <p class="small text-muted text-truncate">{{ book.author or '' }}</p>
                         <span class="badge bg-{{ 'info' if book.status=='reading' else 'success' }}">{{ {'reading':'在读','done':'读完'}[book.status] }}</span>
                     </div>
                     <a href="{{ url_for('main.book_detail', id=book.id) }}" class="stretched-link"></a>
                 </div>
             </div>
             {% else %}
-            <div class="col-12"><div class="alert alert-info">暂无藏书</div></div>
+            <div class="col-12"><div class="alert alert-secondary">暂无藏书</div></div>
             {% endfor %}
         </div>
         {% if pagination.pages > 1 %}

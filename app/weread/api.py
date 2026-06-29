@@ -25,3 +25,12 @@ def get_bookmarklist(book_id):
         'bookId': str(book_id),
         'skill_version': SKILL_VERSION
     }, headers=_headers(), timeout=5, proxies={'http': '', 'https': ''}).json()
+
+
+def get_readdata(mode='monthly', base_time=0):
+    return requests.post(BASE_URL, json={
+        'api_name': '/readdata/detail',
+        'mode': mode,
+        'baseTime': base_time,
+        'skill_version': SKILL_VERSION
+    }, headers=_headers(), timeout=5, proxies={'http': '', 'https': ''}).json()

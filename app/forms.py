@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, DecimalField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Length, Optional, NumberRange
+from wtforms import StringField, TextAreaField, SelectField, DecimalField, PasswordField, SubmitField, BooleanField
+from wtforms.validators import DataRequired, Length, Optional, NumberRange, Email, EqualTo
 
 
 class LoginForm(FlaskForm):
@@ -28,3 +28,18 @@ class BookForm(FlaskForm):
 class CategoryForm(FlaskForm):
     name = StringField('分类名称', validators=[DataRequired(), Length(1, 50)])
     submit = SubmitField('添加')
+
+
+class UserLoginForm(FlaskForm):
+    email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
+    password = PasswordField('密码', validators=[DataRequired()])
+    remember = BooleanField('记住我')
+    submit = SubmitField('登录')
+
+
+class RegisterForm(FlaskForm):
+    username = StringField('用户名', validators=[DataRequired(), Length(2, 50)])
+    email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
+    password = PasswordField('密码', validators=[DataRequired(), Length(6, 50, message='密码至少6位')])
+    confirm = PasswordField('确认密码', validators=[DataRequired(), EqualTo('password', message='两次密码不一致')])
+    submit = SubmitField('注册')

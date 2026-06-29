@@ -1,0 +1,407 @@
+:root {
+  --ink: #2C3E50;
+  --ink-light: #5A6C7D;
+  --cream: #F7F3ED;
+  --paper: #FFFFFF;
+  --warm-accent: #C0392B;
+  --warm-accent-hover: #A93226;
+  --leather: #8B5E3C;
+  --tan: #D4A574;
+  --border-warm: #E8E0D0;
+  --border-light: #F0EBE0;
+  --success-green: #2D7D46;
+  --info-blue: #2C6B8F;
+  --shadow-sm: 0 1px 3px rgba(44, 62, 80, 0.06), 0 1px 2px rgba(44, 62, 80, 0.04);
+  --shadow-md: 0 4px 12px rgba(44, 62, 80, 0.08), 0 2px 4px rgba(44, 62, 80, 0.04);
+  --shadow-lg: 0 8px 24px rgba(44, 62, 80, 0.10), 0 4px 8px rgba(44, 62, 80, 0.04);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --transition: 0.2s ease;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.display-5, .display-6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--leather);
+  transition: color var(--transition);
+}
+a:hover {
+  color: var(--warm-accent);
+}
+
+/* ── Navbar ── */
+.navbar-custom {
+  background: var(--paper);
+  border-bottom: 1px solid var(--border-warm);
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 0;
+}
+.navbar-custom .navbar-brand {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--ink) !important;
+  letter-spacing: -0.02em;
+}
+.navbar-custom .navbar-brand:hover {
+  color: var(--leather) !important;
+}
+.navbar-custom .nav-link {
+  color: var(--ink-light) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.navbar-custom .nav-link:hover {
+  color: var(--ink) !important;
+  background: var(--cream);
+}
+.navbar-custom .nav-link.text-light {
+  color: var(--ink) !important;
+  font-weight: 600;
+}
+.navbar-custom .form-control {
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius);
+  background: var(--cream);
+  font-size: 0.9rem;
+}
+.navbar-custom .form-control:focus {
+  border-color: var(--tan);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
+}
+.navbar-custom .btn-outline-light {
+  color: var(--ink-light);
+  border-color: var(--border-warm);
+}
+.navbar-custom .btn-outline-light:hover {
+  background: var(--cream);
+  color: var(--ink);
+  border-color: var(--tan);
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border-light);
+  padding: 1rem 1.25rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+}
+.card-img-top {
+  transition: transform 0.3s ease;
+}
+.card:hover .card-img-top {
+  transform: scale(1.02);
+}
+.card-body {
+  padding: 1.25rem;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--warm-accent);
+  border-color: var(--warm-accent);
+  border-radius: var(--radius);
+  font-weight: 500;
+  transition: all var(--transition);
+}
+.btn-primary:hover {
+  background: var(--warm-accent-hover);
+  border-color: var(--warm-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.25);
+}
+.btn-outline-primary {
+  color: var(--warm-accent);
+  border-color: var(--warm-accent);
+  border-radius: var(--radius);
+}
+.btn-outline-primary:hover {
+  background: var(--warm-accent);
+  border-color: var(--warm-accent);
+  color: #fff;
+}
+.btn-lg {
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+}
+
+/* ── Badges ── */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.35em 0.65em;
+  border-radius: var(--radius-sm);
+}
+.badge.bg-success {
+  background: var(--success-green) !important;
+}
+.badge.bg-info {
+  background: var(--info-blue) !important;
+}
+.badge.bg-warning {
+  background: var(--tan) !important;
+  color: var(--ink) !important;
+}
+
+/* ── Hero / Jumbotron ── */
+.hero-section {
+  background: var(--paper);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--warm-accent), var(--tan), var(--leather));
+}
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+.hero-section p {
+  font-size: 1.1rem;
+  color: var(--ink-light);
+  max-width: 500px;
+}
+
+/* ── Section headings with decorative lines ── */
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-warm);
+}
+.section-heading h4 {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+/* ── Book cover (card grid) ── */
+.book-cover-wrapper {
+  aspect-ratio: 3/4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cream);
+}
+.book-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* ── Stats page ── */
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+.stat-card .stat-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--warm-accent);
+  margin-bottom: 0.25rem;
+}
+.stat-card .stat-label {
+  color: var(--ink-light);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat-card .stat-sub {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  margin-top: 0.25rem;
+}
+
+/* ── List group ── */
+.list-group-item {
+  border: 1px solid var(--border-light);
+  padding: 0.75rem 1rem;
+  color: var(--ink);
+}
+.list-group-item.active {
+  background: var(--cream);
+  color: var(--ink);
+  border-color: var(--border-warm);
+  font-weight: 600;
+}
+.list-group-item:hover {
+  background: var(--cream);
+}
+
+/* ── Auth pages ── */
+.auth-wrapper {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 2.5rem;
+  background: var(--paper);
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+.auth-card h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+}
+.auth-card .form-control {
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius);
+  padding: 0.65rem 1rem;
+  background: var(--cream);
+}
+.auth-card .form-control:focus {
+  border-color: var(--tan);
+  box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.15);
+  background: var(--paper);
+}
+.auth-card .form-label {
+  font-weight: 500;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+/* ── Book detail page ── */
+.book-detail-cover {
+  max-width: 240px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+.highlight-item {
+  border-left: 3px solid;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  background: var(--cream);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transition: background var(--transition);
+}
+.highlight-item:hover {
+  background: #EDE8DE;
+}
+
+/* ── Pagination ── */
+.pagination .page-link {
+  color: var(--ink);
+  border: 1px solid var(--border-warm);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
+.pagination .page-item.active .page-link {
+  background: var(--warm-accent);
+  border-color: var(--warm-accent);
+  color: #fff;
+}
+.pagination .page-link:hover {
+  background: var(--cream);
+  border-color: var(--tan);
+  color: var(--ink);
+}
+
+/* ── Alert ── */
+.alert {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.alert-secondary {
+  background: var(--cream);
+  color: var(--ink-light);
+  border: 1px solid var(--border-warm);
+}
+
+/* ── Footer ── */
+footer {
+  color: var(--ink-light) !important;
+  border-top-color: var(--border-warm) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 1.5rem;
+  }
+  .hero-section h1 {
+    font-size: 1.8rem;
+  }
+  .stat-card .stat-value {
+    font-size: 1.3rem;
+  }
+}
+
+/* ── Smooth scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

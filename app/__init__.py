@@ -27,6 +27,28 @@ def create_app(config_class=Config):
     from app.weread import bp as weread_bp
     app.register_blueprint(weread_bp, url_prefix='/weread')
 
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
+    @app.template_filter('fmt_seconds')
+    def fmt_seconds_filter(seconds):
+        if seconds is None:
+            return '--'
+        hours = int(seconds // 3600)
+        mins = int((seconds % 3600) // 60)
+        if hours > 0:
+            return f'{hours}小时{mins}分钟'
+        return f'{mins}分钟'
+
+    @app.template_filter('fmt_compare')
+    def fmt_compare_filter(val):
+        if val is None:
+            return ''
+        pct = val * 100
+        if val > 0:
+            return f'较上期增长{pct:.0f}%'
+        return f'较上期下降{abs(pct):.0f}%'
+
     @app.errorhandler(404)
     def not_found(e):
         return render_template('errors/404.html'), 404

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h3 class="text-center mb-1">个人藏书</h3>
+        <p class="text-center text-muted mb-4">用户登录</p>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="请输入邮箱") }}
+                {% for e in form.email.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="请输入密码") }}
+                {% for e in form.password.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div>
+            {{ form.submit(class="btn btn-primary w-100") }}
+        </form>
+        <p class="text-center text-muted mt-3 mb-0 small">
+            没有账号？<a href="{{ url_for('auth.register') }}">立即注册</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

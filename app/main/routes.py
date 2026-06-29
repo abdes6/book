@@ -1,36 +1,71 @@
-from flask import render_template, jsonify
+from functools import wraps
+from datetime import datetime
+from flask import render_template, jsonify, redirect, url_for
 from flask import current_app
+from flask_login import current_user
 from app.main import bp
-from app.models import Book, Category, Highlight
-from app.weread.api import get_shelf
+from app.models import Book, Category, Highlight, db
+from app.weread.api import get_shelf, get_readdata
 from app.weread.importer import import_highlights_for_book
 
 
-@bp.route('/')
-def index():
-    recent_books = Book.query.order_by(Book.created_at.desc()).limit(8).all()
-    reading_books = Book.query.filter_by(status='reading').order_by(Book.updated_at.desc()).limit(4).all()
+def frontend_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.login'))
+        return f(*args, **kwargs)
+    return decorated
 
+
+@bp.route('/')
+@frontend_login_required
+def index():
     weread_books = []
     try:
         data = get_shelf()
         if data and 'books' in data:
-            for b in data.get('books', [])[:8]:
+            sorted_books = sorted(data.get('books', []), key=lambda b: b.get('readUpdateTime', 0) or 0, reverse=True)
+            for b in sorted_books[:10]:
+                local = Book.query.filter_by(weread_book_id=str(b.get('bookId', ''))).first()
                 weread_books.append({
                     'title': b.get('title', ''),
                     'author': b.get('author', ''),
                     'cover': b.get('cover', ''),
                     'book_id': b.get('bookId', ''),
                     'finished': b.get('finishReading', 0),
+                    'local_id': local.id if local else None,
                 })
     except Exception:
         weread_books = None
+    return render_template('index.html', weread_books=weread_books)
 
-    return render_template('index.html', recent_books=recent_books,
-                           reading_books=reading_books, weread_books=weread_books)
+
+@bp.route('/stats')
+@frontend_login_required
+def stats():
+    try:
+        weekly = get_readdata('weekly')
+    except Exception:
+        weekly = None
+    try:
+        monthly = get_readdata('monthly')
+    except Exception:
+        monthly = None
+    try:
+        annually = get_readdata('annually')
+    except Exception:
+        annually = None
+    try:
+        overall = get_readdata('overall')
+    except Exception:
+        overall = None
+    return render_template('stats.html', weekly=weekly, monthly=monthly,
+                           annually=annually, overall=overall)
 
 
 @bp.route('/books')
+@frontend_login_required
 def book_list():
     from flask import request
     cid = request.args.get('category', type=int)
@@ -51,11 +86,16 @@ def book_list():
 
 
 @bp.route('/books/<int:id>')
+@frontend_login_required
 def book_detail(id):
-    return render_template('books/detail.html', book=Book.query.get_or_404(id))
+    book = Book.query.get_or_404(id)
+    book.last_viewed_at = datetime.now()
+    db.session.commit()
+    return render_template('books/detail.html', book=book)
 
 
 @bp.route('/books/<int:id>/highlights')
+@frontend_login_required
 def book_highlights(id):
     book = Book.query.get_or_404(id)
     exists = Highlight.query.filter_by(book_id=book.id).first()

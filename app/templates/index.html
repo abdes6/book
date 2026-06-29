@@ -1,66 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="p-5 mb-4 bg-light rounded-3">
-    <h1 class="display-5 fw-bold">我的藏书阁</h1>
-    <p class="fs-5">记录阅读旅程，收藏每一本好书。</p>
-    <a href="{{ url_for('main.book_list') }}" class="btn btn-primary btn-lg">浏览藏书</a>
+<div class="hero-section mb-5">
+    <h1>我的藏书阁</h1>
+    <p>记录阅读旅程，收藏每一本好书。</p>
+    <a href="{{ url_for('main.book_list') }}" class="btn btn-primary btn-lg mt-2">浏览全部藏书</a>
 </div>
 
 {% if weread_books is not none %}
-<div class="row mb-4">
-    <div class="col-12 d-flex align-items-center gap-2 mb-2">
-        <h4 class="mb-0">微信读书书架</h4>
-        <span class="badge bg-success">已同步</span>
-    </div>
+<div class="section-heading">
+    <h4>最近阅读</h4>
+    <span class="badge bg-success">微信读书</span>
+</div>
+<div class="row row-cols-2 row-cols-md-5 g-3">
     {% for book in weread_books %}
-    <div class="col-md-3 col-6 mb-3">
+    <div class="col">
         <div class="card h-100">
-            {% if book.cover %}<img src="{{ book.cover }}" class="card-img-top" style="width:100%;aspect-ratio:3/4;object-fit:cover;">{% endif %}
-            <div class="card-body">
-                <h6 class="card-title text-truncate">{{ book.title }}</h6>
-                <p class="small text-muted text-truncate">{{ book.author }}</p>
-                {% if book.finished %}
-                <span class="badge bg-success">已读完</span>
-                {% else %}
-                <span class="badge bg-warning text-dark">阅读中</span>
-                {% endif %}
+            {% if book.cover %}
+            <div class="book-cover-wrapper">
+                <img src="{{ book.cover }}" alt="{{ book.title }}">
             </div>
+            {% endif %}
+            <div class="card-body">
+                <h6 class="text-truncate">{{ book.title }}</h6>
+                <p class="small text-muted text-truncate">{{ book.author }}</p>
+                <span class="badge {{ 'bg-success' if book.finished else 'bg-warning text-dark' }}">
+                    {{ '已读完' if book.finished else '阅读中' }}
+                </span>
+            </div>
+            {% if book.local_id %}
+            <a href="{{ url_for('main.book_detail', id=book.local_id) }}" class="stretched-link"></a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
 </div>
 {% elif weread_books is none %}
-<div class="alert alert-secondary">微信读书未连接，设置 WEREAD_API_KEY 后显示书架</div>
-{% endif %}
-
-<div class="row mb-4">
-    <div class="col-12"><h4>最近添加</h4></div>
-    {% for book in recent_books %}
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card h-100">
-            {% if book.cover_url %}<img src="{{ book.cover_url }}" class="card-img-top" style="width:100%;aspect-ratio:3/4;object-fit:cover;">{% endif %}
-            <div class="card-body">
-                <h6>{{ book.title }}</h6>
-                <p class="small text-muted">{{ book.author or '' }}</p>
-                <span class="badge bg-{{ 'info' if book.status=='reading' else 'success' }}">{{ {'reading':'在读','done':'读完'}[book.status] }}</span>
-            </div>
-            <a href="{{ url_for('main.book_detail', id=book.id) }}" class="stretched-link"></a>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% if reading_books %}
-<div class="row">
-    <div class="col-12"><h4>正在读</h4></div>
-    {% for book in reading_books %}
-    <div class="col-md-3 col-6 mb-3">
-        <div class="card h-100">
-            {% if book.cover_url %}<img src="{{ book.cover_url }}" class="card-img-top" style="width:100%;aspect-ratio:3/4;object-fit:cover;">{% endif %}
-            <div class="card-body"><h6>{{ book.title }}</h6></div>
-            <a href="{{ url_for('main.book_detail', id=book.id) }}" class="stretched-link"></a>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+<div class="alert alert-secondary">微信读书未连接，设置 WEREAD_API_KEY 后显示最近阅读</div>
 {% endif %}
 {% endblock %}
