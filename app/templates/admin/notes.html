@@ -1,0 +1,19 @@
+{% extends 'admin/base.html' %}
+{% block title %}读后感管理{% endblock %}
+{% block content %}
+<h4>读后感管理</h4>
+<table class="table">
+    <tr><th>书名</th><th>摘要</th><th>更新时间</th><th>操作</th></tr>
+    {% for b in pagination.items %}
+    <tr><td>{{ b.title }}</td><td>{{ b.notes[:100] }}{% if b.notes|length > 100 %}...{% endif %}</td>
+        <td>{{ b.updated_at.strftime('%Y-%m-%d') }}</td>
+        <td><form method="post" action="{{ url_for('admin.note_delete', id=b.id) }}" style="display:inline" onsubmit="return confirm('确定？')"><button class="btn btn-sm btn-danger">删除</button></form></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">暂无</td></tr>
+    {% endfor %}
+</table>
+{% if pagination.pages > 1 %}
+<nav><ul class="pagination">{% for p in pagination.iter_pages() %}{% if p %}<li class="page-item {{ 'active' if p==pagination.page }}"><a class="page-link" href="{{ url_for('admin.notes', page=p) }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}{% endfor %}</ul></nav>
+{% endif %}
+{% endblock %}

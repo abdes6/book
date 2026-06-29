@@ -1,0 +1,21 @@
+{% extends 'admin/base.html' %}
+{% block title %}管理员登录{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <h3 class="text-center mb-4">管理员登录</h3>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">{{ form.username.label(class="form-label") }}{{ form.username(class="form-control") }}</div>
+            <div class="mb-3">{{ form.password.label(class="form-label") }}{{ form.password(class="form-control") }}</div>
+            <div class="mb-3 row">
+                <div class="col-6">{{ form.captcha.label(class="form-label") }}{{ form.captcha(class="form-control") }}</div>
+                <div class="col-6 d-flex align-items-end">
+                    <img src="{{ url_for('admin.captcha') }}" alt="验证码" style="cursor:pointer;height:38px;" onclick="this.src='{{ url_for('admin.captcha') }}?'+Math.random()">
+                </div>
+            </div>
+            {{ form.submit(class="btn btn-primary w-100") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

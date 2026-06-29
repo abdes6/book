@@ -1,0 +1,18 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h4>{{ title }}</h4>
+<form method="post" class="row g-3">
+    {{ form.hidden_tag() }}
+    <div class="col-md-6">{{ form.title.label }}{{ form.title(class="form-control") }}</div>
+    <div class="col-md-6">{{ form.author.label }}{{ form.author(class="form-control") }}</div>
+    <div class="col-md-4">{{ form.isbn.label }}{{ form.isbn(class="form-control") }}</div>
+    <div class="col-md-4">{{ form.category_id.label }}{{ form.category_id(class="form-select") }}</div>
+    <div class="col-md-4">{{ form.status.label }}{{ form.status(class="form-select") }}</div>
+    <div class="col-md-4">{{ form.rating.label }}{{ form.rating(class="form-control") }}</div>
+    <div class="col-md-8">{{ form.cover_url.label }}{{ form.cover_url(class="form-control") }}</div>
+    <div class="col-12">{{ form.summary.label }}{{ form.summary(class="form-control", rows=3) }}</div>
+    <div class="col-12">{{ form.notes.label }}{{ form.notes(class="form-control", rows=4) }}</div>
+    <div class="col-12">{{ form.submit(class="btn btn-primary") }}<a href="{{ url_for('admin.books') }}" class="btn btn-secondary ms-2">取消</a></div>
+</form>
+{% endblock %}

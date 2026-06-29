@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-header">筛选</div>
+            <div class="card-body">
+                <h6>分类</h6>
+                <div class="list-group list-group-flush mb-3">
+                    <a href="{{ url_for('main.book_list', status=current_status, q=q) }}" class="list-group-item list-group-item-action {{ 'active' if not current_category }}">全部</a>
+                    {% for c in categories %}
+                    <a href="{{ url_for('main.book_list', category=c.id, status=current_status, q=q) }}" class="list-group-item list-group-item-action {{ 'active' if current_category==c.id }}">{{ c.name }}</a>
+                    {% endfor %}
+                </div>
+                <h6>状态</h6>
+                <div class="list-group list-group-flush">
+                    {% set status_opts = [('', '全部'), ('want', '想读'), ('reading', '在读'), ('done', '已读')] %}
+                    {% for k, v in status_opts %}
+                    <a href="{{ url_for('main.book_list', category=current_category, status=k or None, q=q) }}" class="list-group-item list-group-item-action {{ 'active' if current_status==k }}">{{ v }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="row">
+            {% for book in pagination.items %}
+            <div class="col-md-4 col-6 mb-3">
+                <div class="card h-100">
+                    {% if book.cover_url %}<img src="{{ book.cover_url }}" class="card-img-top" style="height:200px;object-fit:cover;">{% endif %}
+                    <div class="card-body">
+                        <h6>{{ book.title }}</h6>
+                        <p class="small text-muted">{{ book.author or '' }}</p>
+                        <span class="badge bg-{{ 'secondary' if book.status=='want' else 'info' if book.status=='reading' else 'success' }}">{{ {'want':'想读','reading':'在读','done':'已读'}[book.status] }}</span>
+                    </div>
+                    <a href="{{ url_for('main.book_detail', id=book.id) }}" class="stretched-link"></a>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12"><div class="alert alert-info">暂无藏书</div></div>
+            {% endfor %}
+        </div>
+        {% if pagination.pages > 1 %}
+        <nav><ul class="pagination">{% for p in pagination.iter_pages() %}{% if p %}<li class="page-item {{ 'active' if p==pagination.page }}"><a class="page-link" href="{{ url_for('main.book_list', page=p, category=current_category, status=current_status, q=q) }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}{% endfor %}</ul></nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
