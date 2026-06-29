@@ -18,7 +18,7 @@ class BookForm(FlaskForm):
     summary = TextAreaField('简介')
     rating = DecimalField('评分', validators=[Optional(), NumberRange(0, 5)], places=1)
     status = SelectField('阅读状态', choices=[
-        ('want', '想读'), ('reading', '在读'), ('done', '已读')
+        ('reading', '在读'), ('done', '读完')
     ])
     notes = TextAreaField('读后感')
     category_id = SelectField('分类', coerce=int, validators=[Optional()])

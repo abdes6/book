@@ -41,7 +41,6 @@ def logout():
 def dashboard():
     return render_template('admin/dashboard.html',
         total_books=Book.query.count(),
-        want_count=Book.query.filter_by(status='want').count(),
         reading_count=Book.query.filter_by(status='reading').count(),
         done_count=Book.query.filter_by(status='done').count(),
         category_count=Category.query.count(),

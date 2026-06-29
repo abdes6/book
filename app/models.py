@@ -25,16 +25,33 @@ class Book(db.Model):
     cover_url = db.Column(db.String(500))
     summary = db.Column(db.Text)
     rating = db.Column(db.Numeric(2, 1), default=0.0)
-    status = db.Column(db.String(10), default='want')
+    status = db.Column(db.String(10), default='reading')
     notes = db.Column(db.Text)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     imported = db.Column(db.Boolean, default=False)
     weread_book_id = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    highlights = db.relationship('Highlight', backref='book', lazy='dynamic',
+                                 order_by='Highlight.chapter_uid, Highlight.created_at')
 
     def __repr__(self):
         return f'<Book {self.title}>'
+
+
+class Highlight(db.Model):
+    __tablename__ = 'highlights'
+
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    weread_bookmark_id = db.Column(db.String(100), nullable=False)
+    chapter_uid = db.Column(db.Integer, default=0)
+    chapter_title = db.Column(db.String(200), default='')
+    mark_text = db.Column(db.Text, nullable=False)
+    range = db.Column(db.String(100))
+    color_style = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime)
+    imported_at = db.Column(db.DateTime, default=datetime.now)
 
 
 class Admin(UserMixin, db.Model):

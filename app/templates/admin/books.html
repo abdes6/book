@@ -12,7 +12,7 @@
         <td>{% if b.cover_url %}<img src="{{ b.cover_url }}" width="40" height="60" style="object-fit:cover;">{% else %}-{% endif %}</td>
         <td>{{ b.title }}</td><td>{{ b.author or '-' }}</td>
         <td>{{ b.category.name if b.category else '-' }}</td>
-        <td>{{ {'want':'想读','reading':'在读','done':'已读'}[b.status] }}</td>
+        <td>{{ {'reading':'在读','done':'读完'}[b.status] }}</td>
         <td>{{ b.rating or '-' }}</td>
         <td>
             <a href="{{ url_for('admin.book_edit', id=b.id) }}" class="btn btn-sm btn-warning">编辑</a>

@@ -68,4 +68,11 @@ def create_app(config_class=Config):
         result = update_categories_from_api()
         click.echo(f'完成！{result["matched"]} 本已分类，{result["skipped"]} 本未匹配')
 
+    @app.cli.command('import-highlights')
+    def import_highlights_command():
+        import click
+        click.echo('正在批量导入划线笔记...')
+        from app.cli import import_all_highlights
+        import_all_highlights()
+
     return app

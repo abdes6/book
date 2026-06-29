@@ -1,6 +1,8 @@
+from datetime import datetime
+
 from app.extensions import db
-from app.models import Book, Category
-from app.weread.api import get_shelf
+from app.models import Book, Category, Highlight
+from app.weread.api import get_shelf, get_bookmarklist
 
 
 def parse_weread_category(category_str):
@@ -58,7 +60,7 @@ def import_shelf_to_db():
             weread_book_id=weread_id,
             imported=True,
             category_id=cat_id,
-            status='done' if b.get('finishReading', 0) else 'want',
+            status='done' if b.get('finishReading', 0) else 'reading',
         )
         db.session.add(book)
         imported += 1
@@ -103,3 +105,38 @@ def update_categories_from_api():
 
     db.session.commit()
     return {'matched': matched, 'skipped': skipped, 'total': len(books_data)}
+
+
+def import_highlights_for_book(book):
+    if not book.weread_book_id:
+        return {'imported': 0, 'total': 0}
+
+    existing_ids = {h.weread_bookmark_id for h in Highlight.query.with_entities(
+        Highlight.weread_bookmark_id).filter_by(book_id=book.id).all()}
+
+    data = get_bookmarklist(book.weread_book_id)
+    chapters_map = {}
+    for ch in data.get('chapters', []):
+        chapters_map[ch.get('chapterUid', 0)] = ch.get('title', '')
+
+    imported = 0
+    for item in data.get('updated', []):
+        bmid = str(item.get('bookmarkId', ''))
+        if not bmid or bmid in existing_ids:
+            continue
+        ch_uid = item.get('chapterUid', 0)
+        hl = Highlight(
+            book_id=book.id,
+            weread_bookmark_id=bmid,
+            chapter_uid=ch_uid,
+            chapter_title=chapters_map.get(ch_uid, ''),
+            mark_text=item.get('markText', ''),
+            range=item.get('range', ''),
+            color_style=item.get('colorStyle', 0),
+            created_at=datetime.fromtimestamp(item.get('createTime', 0)) if item.get('createTime') else None,
+        )
+        db.session.add(hl)
+        imported += 1
+
+    db.session.commit()
+    return {'imported': imported, 'total': len(data.get('updated', []))}

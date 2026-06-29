@@ -17,3 +17,11 @@ def get_shelf():
         'api_name': '/shelf/sync',
         'skill_version': SKILL_VERSION
     }, headers=_headers(), timeout=5, proxies={'http': '', 'https': ''}).json()
+
+
+def get_bookmarklist(book_id):
+    return requests.post(BASE_URL, json={
+        'api_name': '/book/bookmarklist',
+        'bookId': str(book_id),
+        'skill_version': SKILL_VERSION
+    }, headers=_headers(), timeout=5, proxies={'http': '', 'https': ''}).json()
