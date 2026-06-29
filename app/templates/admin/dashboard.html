@@ -3,12 +3,20 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">后台概览</h4>
-    <form method="POST" action="{{ url_for('admin.import_weread') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn btn-success" onclick="this.disabled=true;this.innerHTML='导入中...'">
-            📥 从微信读书导入
-        </button>
-    </form>
+    <div class="d-flex gap-2">
+        <form method="POST" action="{{ url_for('admin.categorize_weread') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-warning" onclick="this.disabled=true;this.innerHTML='分类中...'">
+                🏷️ 自动分类
+            </button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.import_weread') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-success" onclick="this.disabled=true;this.innerHTML='导入中...'">
+                📥 从微信读书导入
+            </button>
+        </form>
+    </div>
 </div>
 <div class="row mb-4">
     <div class="col-md-3"><div class="card text-bg-primary"><div class="card-body"><h5>总藏书</h5><p class="display-6">{{ total_books }}</p></div></div></div>

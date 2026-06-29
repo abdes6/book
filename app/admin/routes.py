@@ -139,6 +139,18 @@ def import_weread():
     return redirect(url_for('admin.dashboard'))
 
 
+@bp.route('/categorize-weread', methods=['POST'])
+@login_required
+def categorize_weread():
+    from app.weread.importer import categorize_all_books
+    try:
+        result = categorize_all_books()
+        flash(f'自动分类完成：{result["categorized"]} 本已分类，{result["skipped"]} 本未匹配', 'success')
+    except Exception as e:
+        flash(f'分类失败：{e}', 'danger')
+    return redirect(url_for('admin.dashboard'))
+
+
 @bp.route('/notes')
 @login_required
 def notes():
