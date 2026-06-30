@@ -1,7 +1,21 @@
 import logging
+import markdown as md_lib
+import bleach
 from flask import Flask, render_template
 from config import Config
 from app.extensions import db, login_manager, migrate, csrf
+
+ALLOWED_TAGS = ['h1','h2','h3','h4','h5','h6','p','br','strong','em',
+    'a','ul','ol','li','code','pre','blockquote','img','hr','table',
+    'thead','tbody','tr','th','td','span','div']
+
+ALLOWED_ATTRS = {'img':['src','alt','title'], 'a':['href','title','target'],
+    '*':['class']}
+
+
+def render_markdown(text):
+    html = md_lib.markdown(text or '', extensions=['extra', 'codehilite'])
+    return bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -30,6 +44,9 @@ def create_app(config_class=Config):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
+    from app.notes import bp as notes_bp
+    app.register_blueprint(notes_bp, url_prefix='/notes')
+
     @app.template_filter('fmt_seconds')
     def fmt_seconds_filter(seconds):
         if seconds is None:
@@ -48,6 +65,8 @@ def create_app(config_class=Config):
         if val > 0:
             return f'较上期增长{pct:.0f}%'
         return f'较上期下降{abs(pct):.0f}%'
+
+    app.jinja_env.filters['markdown'] = render_markdown
 
     @app.errorhandler(404)
     def not_found(e):

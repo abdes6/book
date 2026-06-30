@@ -89,6 +89,36 @@ class Admin(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
+class Note(db.Model):
+    __tablename__ = 'notes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    author = db.relationship('User', backref=db.backref('notes', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('user_notes', lazy='dynamic',
+                                                      order_by='Note.updated_at.desc()'))
+
+
+class NoteImage(db.Model):
+    __tablename__ = 'note_images'
+
+    id = db.Column(db.Integer, primary_key=True)
+    note_id = db.Column(db.Integer, db.ForeignKey('notes.id'), nullable=True)
+    filename = db.Column(db.String(200), nullable=False)
+    stored_path = db.Column(db.String(300), nullable=False)
+    display_width = db.Column(db.Integer, nullable=True)
+    uploaded_at = db.Column(db.DateTime, default=datetime.now)
+
+    note_ref = db.relationship('Note', backref=db.backref('images', lazy='dynamic',
+                                order_by='NoteImage.uploaded_at'))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     if user_id.startswith('u_'):

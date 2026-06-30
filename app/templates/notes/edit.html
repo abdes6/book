@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}编辑笔记{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <h4 class="mb-3">编辑笔记</h4>
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.title.label(class='form-label') }}
+                {{ form.title(class='form-control') }}
+                {% for e in form.title.errors %}<div class="text-danger">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.content.label(class='form-label') }}
+                {{ form.content(class='form-control', rows=20, id='note-editor') }}
+            </div>
+            <div class="mb-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="form-label mb-0">附图</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('image-input').click()">+ 上传</button>
+                    <input type="file" id="image-input" accept="image/*" style="display:none">
+                    <small class="text-muted">拖拽图片右下角可自由缩放</small>
+                </div>
+                <div id="image-preview" class="d-flex flex-column align-items-center gap-3">
+                    {% for img in existing_images %}
+                    <div class="card existing-image" data-img-id="{{ img.id }}" style="overflow:auto;resize:horizontal;width:{{ img.display_width or 250 }}px;max-width:100%;min-width:100px">
+                        <img src="{{ url_for('static', filename=img.stored_path) }}" style="width:100%;height:auto;display:block" class="card-img-top rounded-0" draggable="false">
+                        <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                            <input type="hidden" name="existing_width_{{ img.id }}" value="{{ img.display_width or 250 }}">
+                            <small class="text-muted existing-width-label">{{ img.display_width or 250 }}px</small>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeExisting({{ img.id }})">删除</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="new_images" id="new-images" value="[]">
+                <input type="hidden" name="removed_image_ids" id="removed-image-ids" value="[]">
+            </div>
+            {{ form.submit(class='btn btn-primary') }}
+            <a href="{{ url_for('notes.note_detail', id=note.id) }}" class="btn btn-outline-secondary">取消</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+var newImages = [];
+var removedIds = [];
+var newIdxCounter = 0;
+var existingObserver = null;
+
+document.getElementById('image-input').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var formData = new FormData();
+    formData.append('image', file);
+    fetch('{{ url_for("notes.upload_image") }}', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.url) {
+            var idx = newIdxCounter++;
+            newImages.push({idx: idx, url: data.url, path: data.stored_path, name: data.original_name, width: 250});
+            renderNewImage(idx);
+        }
+    })
+    .catch(function() { alert('上传失败'); });
+});
+
+function startObserve(el, callback) {
+    var obs = new ResizeObserver(function() {
+        callback(el.offsetWidth);
+    });
+    obs.observe(el);
+    return obs;
+}
+
+function renderNewImage(idx) {
+    var img = newImages.find(function(i) { return i.idx === idx; });
+    if (!img) return;
+    var div = document.getElementById('image-preview');
+    var wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.style.overflow = 'auto';
+    wrap.style.resize = 'horizontal';
+    wrap.style.width = '250px';
+    wrap.style.maxWidth = '100%';
+    wrap.style.minWidth = '100px';
+    wrap.dataset.newIdx = idx;
+    wrap.innerHTML =
+        '<img src="' + img.url + '" style="width:100%;height:auto;display:block" class="card-img-top rounded-0" draggable="false">'
+        + '<div class="card-body p-2 d-flex justify-content-between align-items-center">'
+        + '<small class="text-muted new-width-label">250px</small>'
+        + '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeNewImage(' + idx + ')">删除</button>'
+        + '</div>';
+    div.appendChild(wrap);
+    startObserve(wrap, function(w) {
+        img.width = w;
+        wrap.querySelector('.new-width-label').textContent = w + 'px';
+        syncNewHidden();
+    });
+}
+
+function removeNewImage(idx) {
+    newImages = newImages.filter(function(i) { return i.idx !== idx; });
+    var el = document.querySelector('[data-new-idx="' + idx + '"]');
+    if (el) el.remove();
+    syncNewHidden();
+}
+
+function removeExisting(imgId) {
+    removedIds.push(imgId);
+    var el = document.querySelector('[data-img-id="' + imgId + '"]');
+    if (el) el.style.display = 'none';
+    document.getElementById('removed-image-ids').value = JSON.stringify(removedIds);
+}
+
+function syncNewHidden() {
+    document.getElementById('new-images').value = JSON.stringify(
+        newImages.map(function(i) { return {path: i.path, name: i.name, width: i.width}; })
+    );
+}
+
+// Observe existing images for resize
+document.querySelectorAll('.existing-image').forEach(function(el) {
+    startObserve(el, function(w) {
+        var id = el.dataset.imgId;
+        el.querySelector('.existing-width-label').textContent = w + 'px';
+        el.querySelector('input[name="existing_width_' + id + '"]').value = w;
+    });
+});
+</script>
+{% endblock %}

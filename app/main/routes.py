@@ -1,21 +1,12 @@
-from functools import wraps
 from datetime import datetime
 from flask import render_template, jsonify, redirect, url_for
 from flask import current_app
 from flask_login import current_user
 from app.main import bp
+from app.extensions import frontend_login_required
 from app.models import Book, Category, Highlight, db
 from app.weread.api import get_shelf, get_readdata
 from app.weread.importer import import_highlights_for_book
-
-
-def frontend_login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not current_user.is_authenticated:
-            return redirect(url_for('auth.login'))
-        return f(*args, **kwargs)
-    return decorated
 
 
 @bp.route('/')

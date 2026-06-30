@@ -24,14 +24,38 @@
 </div>
 
 <hr class="my-4" style="border-color:var(--border-warm);">
-<h4>划线笔记 <small id="highlight-count" class="text-muted"></small></h4>
-<div id="highlight-loading" class="text-center py-4">
-    <div class="spinner-border" role="status" style="color:var(--leather);"><span class="visually-hidden">加载中...</span></div>
-    <p class="mt-2 text-muted">正在加载划线笔记...</p>
+
+<ul class="nav nav-tabs mb-3" id="noteTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="highlights-tab" data-bs-toggle="tab" data-bs-target="#highlights" type="button">划线笔记 <span id="highlight-count" class="text-muted"></span></button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="mynotes-tab" data-bs-toggle="tab" data-bs-target="#mynotes" type="button">我的笔记 <span id="note-count" class="text-muted"></span></button>
+    </li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="highlights">
+        <div id="highlight-loading" class="text-center py-4">
+            <div class="spinner-border" role="status" style="color:var(--leather);"><span class="visually-hidden">加载中...</span></div>
+            <p class="mt-2 text-muted">正在加载划线笔记...</p>
+        </div>
+        <div id="highlight-error" class="alert alert-danger d-none"></div>
+        <div id="highlight-empty" class="text-muted py-3 d-none">暂无划线笔记</div>
+        <div id="highlight-content" class="d-none"></div>
+    </div>
+    <div class="tab-pane fade" id="mynotes">
+        <div id="notes-loading" class="text-center py-4">
+            <div class="spinner-border" role="status" style="color:var(--leather);"><span class="visually-hidden">加载中...</span></div>
+            <p class="mt-2 text-muted">正在加载笔记...</p>
+        </div>
+        <div id="notes-error" class="alert alert-danger d-none"></div>
+        <div id="notes-empty" class="text-muted py-3 d-none">
+            暂无笔记
+            <div class="mt-2"><a href="{{ url_for('notes.note_create', book_id=book.id) }}" class="btn btn-primary btn-sm">写第一篇笔记</a></div>
+        </div>
+        <div id="notes-content" class="d-none"></div>
+    </div>
 </div>
-<div id="highlight-error" class="alert alert-danger d-none"></div>
-<div id="highlight-empty" class="text-muted py-3 d-none">暂无划线笔记</div>
-<div id="highlight-content" class="d-none"></div>
 {% endblock %}
 
 {% block scripts %}
@@ -71,5 +95,50 @@ fetch('{{ url_for("main.book_highlights", id=book.id) }}')
         document.getElementById('highlight-error').classList.remove('d-none');
         document.getElementById('highlight-error').textContent = e.message || '加载划线笔记失败，请稍后重试';
     });
+
+fetch('{{ url_for("notes.book_notes", book_id=book.id) }}')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('notes-loading').classList.add('d-none');
+        if (data && data.length > 0) {
+            document.getElementById('note-count').textContent = '(' + data.length + '篇)';
+            var html = '';
+            data.forEach(function(n) {
+                var detailUrl = '{{ url_for("notes.note_detail", id=0) }}'.replace('/0', '/' + n.id);
+                var editUrl = '{{ url_for("notes.note_edit", id=0) }}'.replace('/0', '/' + n.id);
+                var deleteUrl = '{{ url_for("notes.note_delete", id=0) }}'.replace('/0', '/' + n.id);
+                html += '<div class="card mb-2">';
+                html += '<div class="card-body">';
+                html += '<h5 class="card-title"><a href="' + detailUrl + '">' + escapeHtml(n.title) + '</a></h5>';
+                html += '<p class="card-text text-muted small">' + escapeHtml(n.preview) + '</p>';
+                html += '<p class="card-text"><small class="text-muted">' + n.updated_at + '</small>';
+                html += ' <a href="' + editUrl + '" class="btn btn-sm btn-outline-primary">编辑</a>';
+                html += ' <form method="post" action="' + deleteUrl + '" style="display:inline" onsubmit="return confirm(\'确定删除？\')"><button class="btn btn-sm btn-outline-danger">删除</button></form>';
+                html += '</p></div></div>';
+            });
+            html += '<div class="mt-3"><a href="{{ url_for("notes.note_create", book_id=book.id) }}" class="btn btn-primary">写新笔记</a></div>';
+            document.getElementById('notes-content').innerHTML = html;
+            document.getElementById('notes-content').classList.remove('d-none');
+        } else {
+            document.getElementById('notes-empty').classList.remove('d-none');
+        }
+    })
+    .catch(function() {
+        document.getElementById('notes-loading').classList.add('d-none');
+        document.getElementById('notes-error').classList.remove('d-none');
+        document.getElementById('notes-error').textContent = '加载笔记失败';
+    });
+
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+var hash = window.location.hash;
+if (hash) {
+    var tab = document.querySelector('[data-bs-target="' + hash + '"]');
+    if (tab) new bootstrap.Tab(tab).show();
+}
 </script>
 {% endblock %}
