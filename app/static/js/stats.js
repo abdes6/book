@@ -166,14 +166,20 @@ document.addEventListener("DOMContentLoaded", function () {
   if (goalForm) {
     goalForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var fd = new FormData();
-      fd.append("year", new Date().getFullYear());
-      fd.append("target_read_time", parseInt(document.getElementById("goal-year-input").value) * 3600);
-      fd.append("month", new Date().getMonth() + 1);
-      fd.append("target_read_time", parseInt(document.getElementById("goal-month-input").value) * 3600);
-      fetch("/stats/goal/edit", { method: "POST", body: fd })
-        .then(function (r) { return r.json(); })
-        .then(function () { location.reload(); });
+      var now = new Date();
+      var yearVal = parseInt(document.getElementById("goal-year-input").value) * 3600;
+      var monthVal = parseInt(document.getElementById("goal-month-input").value) * 3600;
+      var fd1 = new FormData();
+      fd1.append("year", now.getFullYear());
+      fd1.append("target_read_time", yearVal);
+      var fd2 = new FormData();
+      fd2.append("year", now.getFullYear());
+      fd2.append("month", now.getMonth() + 1);
+      fd2.append("target_read_time", monthVal);
+      Promise.all([
+        fetch("/stats/goal/edit", { method: "POST", body: fd1 }),
+        fetch("/stats/goal/edit", { method: "POST", body: fd2 })
+      ]).then(function () { location.reload(); });
     });
   }
 });
