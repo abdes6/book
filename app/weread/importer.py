@@ -23,8 +23,8 @@ def get_or_create_category(name):
     return cat.id
 
 
-def import_shelf_to_db(user_id):
-    data = get_shelf()
+def import_shelf_to_db(user_id, api_key=None):
+    data = get_shelf(api_key=api_key)
     books_data = data.get('books', [])
 
     imported = 0

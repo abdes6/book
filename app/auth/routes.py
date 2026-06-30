@@ -67,7 +67,7 @@ def register():
         db.session.add(user)
         db.session.flush()
         from app.weread.importer import import_shelf_to_db
-        import_shelf_to_db(user.id)
+        import_shelf_to_db(user.id, api_key=form.weread_api_key.data)
         user.shelf_synced = True
         db.session.commit()
         login_user(user)
