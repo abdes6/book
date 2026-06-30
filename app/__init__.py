@@ -1,4 +1,5 @@
 import logging
+import click
 import markdown as md_lib
 import bleach
 from flask import Flask, render_template
@@ -115,5 +116,21 @@ def create_app(config_class=Config):
         click.echo('正在批量导入划线笔记...')
         from app.cli import import_all_highlights
         import_all_highlights()
+
+    @app.cli.command('sync-stats')
+    @click.option('--force', is_flag=True, help='强制全量重新同步')
+    def sync_stats_command(force):
+        from app.weread.stats_sync import sync_all_stats
+        from app.models import ReadStat, DailyReadStat, User
+        if force:
+            ReadStat.query.delete()
+            DailyReadStat.query.delete()
+            db.session.commit()
+            click.echo('已清除缓存的统计数据')
+        users = User.query.all()
+        for user in users:
+            sync_all_stats(user.id)
+            click.echo(f'已同步用户 {user.id}')
+        click.echo('同步完成')
 
     return app
