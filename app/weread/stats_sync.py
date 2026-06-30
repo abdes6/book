@@ -31,7 +31,15 @@ def _parse_period(mode, base_time=0):
     return now, now
 
 
-def sync_all_stats(user_id):
+def sync_all_stats(user_id, ttl_seconds=300):
+    latest = ReadStat.query.filter_by(user_id=user_id).order_by(
+        ReadStat.synced_at.desc()
+    ).first()
+    if latest and latest.synced_at:
+        elapsed = (datetime.utcnow() - latest.synced_at).total_seconds()
+        if elapsed < ttl_seconds:
+            return
+
     overall = get_readdata("overall")
     if not overall or not overall.get("totalReadTime"):
         logger.warning("WeRead API overall failed")
