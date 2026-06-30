@@ -67,12 +67,17 @@ def sync_all_stats(user_id):
         _save_read_stat(user_id, "weekly", weekly)
 
     now = datetime.utcnow()
-    for month in range(1, now.month + 1):
-        ts = int(datetime(now.year, month, 1).timestamp())
+    for i in range(11, -1, -1):
+        m = now.month - i
+        y = now.year
+        if m <= 0:
+            m += 12
+            y -= 1
+        ts = int(datetime(y, m, 1).timestamp())
         monthly_data = get_readdata("monthly", base_time=ts)
         if monthly_data:
             _save_read_stat(user_id, "monthly", monthly_data,
-                            period_start=datetime(now.year, month, 1))
+                            period_start=datetime(y, m, 1))
             if monthly_data.get("readTimes"):
                 _save_daily_from_readTimes(user_id, monthly_data["readTimes"])
 
