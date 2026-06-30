@@ -61,8 +61,6 @@ def sync_all_stats(user_id):
         if data and data.get("totalReadTime") is not None:
             _save_read_stat(user_id, "annually", data,
                             period_start=datetime(year, 1, 1))
-            daily = data.get("dailyReadTimes") or {}
-            _save_daily_read_times(user_id, daily)
 
     weekly = get_readdata("weekly")
     if weekly:
@@ -71,6 +69,13 @@ def sync_all_stats(user_id):
     monthly = get_readdata("monthly")
     if monthly:
         _save_read_stat(user_id, "monthly", monthly)
+
+    now = datetime.utcnow()
+    for month in range(1, now.month + 1):
+        ts = int(datetime(now.year, month, 1).timestamp())
+        monthly_data = get_readdata("monthly", base_time=ts)
+        if monthly_data and monthly_data.get("readTimes"):
+            _save_daily_from_readTimes(user_id, monthly_data["readTimes"])
 
     existing_today = DailyReadStat.query.filter_by(
         user_id=user_id, date=date.today()
@@ -133,7 +138,7 @@ def _save_read_stat(user_id, mode, data, period_start=None):
     db.session.commit()
 
 
-def _save_daily_read_times(user_id, daily_dict):
+def _save_daily_from_readTimes(user_id, daily_dict):
     for ts_str, seconds in daily_dict.items():
         try:
             day = datetime.fromtimestamp(int(ts_str)).date()
