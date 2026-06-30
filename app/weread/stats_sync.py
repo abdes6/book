@@ -143,23 +143,50 @@ def _save_read_stat(user_id, mode, data, period_start=None):
 
 
 def _save_daily_from_readTimes(user_id, daily_dict):
+    if not daily_dict:
+        return
+    timestamps = []
     for ts_str, seconds in daily_dict.items():
         try:
             day = datetime.fromtimestamp(int(ts_str)).date()
+            timestamps.append((day, int(seconds)))
         except (ValueError, OSError):
             continue
+    saved_dates = set()
+    for day, seconds in timestamps:
+        saved_dates.add(day)
         existing = DailyReadStat.query.filter_by(
             user_id=user_id, date=day
         ).first()
         if existing:
-            existing.total_read_time = int(seconds)
+            existing.total_read_time = seconds
             existing.synced_at = datetime.utcnow()
         else:
-            record = DailyReadStat(
-                user_id=user_id,
-                date=day,
-                total_read_time=int(seconds),
+            db.session.add(DailyReadStat(
+                user_id=user_id, date=day,
+                total_read_time=seconds,
                 synced_at=datetime.utcnow()
-            )
-            db.session.add(record)
+            ))
+    if not timestamps:
+        return
+    min_day = timestamps[0][0].replace(day=1)
+    max_day = timestamps[-1][0]
+    if max_day.month == datetime.utcnow().month:
+        end_day = datetime.utcnow().date()
+    else:
+        end_day = max_day.replace(day=1)
+        end_day = (end_day + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    d = min_day
+    while d <= end_day:
+        if d not in saved_dates:
+            existing = DailyReadStat.query.filter_by(
+                user_id=user_id, date=d
+            ).first()
+            if not existing:
+                db.session.add(DailyReadStat(
+                    user_id=user_id, date=d,
+                    total_read_time=0,
+                    synced_at=datetime.utcnow()
+                ))
+        d += timedelta(days=1)
     db.session.commit()
