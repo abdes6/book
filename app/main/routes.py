@@ -130,7 +130,7 @@ def stats():
 
     weekday_names = ['', '周日', '周一', '周二', '周三', '周四', '周五', '周六']
     weekday_rows = db.session.query(
-        extract('DAYOFWEEK', DailyReadStat.date).label('dow'),
+        func.dayofweek(DailyReadStat.date).label('dow'),
         func.avg(DailyReadStat.total_read_time).label('avg_time')
     ).filter(
         DailyReadStat.user_id == user_id,

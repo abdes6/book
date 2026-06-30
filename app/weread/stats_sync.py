@@ -91,28 +91,45 @@ def _save_read_stat(user_id, mode, data, period_start=None):
             ps = datetime.fromtimestamp(base_time)
             pe = datetime(ps.year + 1, 1, 1)
 
-    stat = ReadStat(
-        user_id=user_id,
-        mode=mode,
-        period_start=ps,
-        period_end=pe,
-        total_read_time=data.get("totalReadTime", 0),
-        read_days=data.get("readDays", 0),
-        day_avg_read_time=data.get("dayAverageReadTime", 0),
-        compare=data.get("compare"),
-        read_longest=data.get("readLongest"),
-        read_stat=data.get("readStat"),
-        prefer_category=data.get("preferCategory"),
-        prefer_time_word=data.get("preferTimeWord"),
-        prefer_author=data.get("preferAuthor"),
-        prefer_time=data.get("preferTime"),
-        read_rate=data.get("readRate"),
-        wr_read_time=data.get("wrReadTime"),
-        wr_listen_time=data.get("wrListenTime"),
-        raw_data=data,
-        synced_at=datetime.utcnow()
-    )
-    db.session.merge(stat)
+    existing = ReadStat.query.filter_by(
+        user_id=user_id, mode=mode, period_start=ps
+    ).first()
+    if existing:
+        existing.total_read_time = data.get("totalReadTime", 0)
+        existing.read_days = data.get("readDays", 0)
+        existing.day_avg_read_time = data.get("dayAverageReadTime", 0)
+        existing.compare = data.get("compare")
+        existing.read_longest = data.get("readLongest")
+        existing.read_stat = data.get("readStat")
+        existing.prefer_category = data.get("preferCategory")
+        existing.prefer_time_word = data.get("preferTimeWord")
+        existing.prefer_author = data.get("preferAuthor")
+        existing.prefer_time = data.get("preferTime")
+        existing.read_rate = data.get("readRate")
+        existing.wr_read_time = data.get("wrReadTime")
+        existing.wr_listen_time = data.get("wrListenTime")
+        existing.raw_data = data
+        existing.synced_at = datetime.utcnow()
+    else:
+        stat = ReadStat(
+            user_id=user_id, mode=mode, period_start=ps, period_end=pe,
+            total_read_time=data.get("totalReadTime", 0),
+            read_days=data.get("readDays", 0),
+            day_avg_read_time=data.get("dayAverageReadTime", 0),
+            compare=data.get("compare"),
+            read_longest=data.get("readLongest"),
+            read_stat=data.get("readStat"),
+            prefer_category=data.get("preferCategory"),
+            prefer_time_word=data.get("preferTimeWord"),
+            prefer_author=data.get("preferAuthor"),
+            prefer_time=data.get("preferTime"),
+            read_rate=data.get("readRate"),
+            wr_read_time=data.get("wrReadTime"),
+            wr_listen_time=data.get("wrListenTime"),
+            raw_data=data,
+            synced_at=datetime.utcnow()
+        )
+        db.session.add(stat)
     db.session.commit()
 
 
