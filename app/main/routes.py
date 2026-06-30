@@ -152,15 +152,15 @@ def stats():
     month_goal = ReadGoal.query.filter_by(
         user_id=user_id, year=now_dt.year, month=now_dt.month
     ).first()
-    yearly_seconds = db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
+    yearly_seconds = int(db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
         DailyReadStat.user_id == user_id,
         extract('YEAR', DailyReadStat.date) == now_dt.year
-    ).scalar() or 0
-    monthly_seconds = db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
+    ).scalar() or 0)
+    monthly_seconds = int(db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
         DailyReadStat.user_id == user_id,
         extract('YEAR', DailyReadStat.date) == now_dt.year,
         extract('MONTH', DailyReadStat.date) == now_dt.month
-    ).scalar() or 0
+    ).scalar() or 0)
 
     chart_data = {
         'dailyTrend': days_30,
