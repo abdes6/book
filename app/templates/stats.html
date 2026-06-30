@@ -11,8 +11,8 @@
 
 <div class="row g-3 mb-4">
     {% for data, label in [(weekly,'本周'), (monthly,'本月'), (annually,'今年'), (overall,'总计')] %}
-    <div class="col-md-3 col-6">
-        <div class="stat-card">
+    <div class="col-md-3 col-6 d-flex">
+        <div class="stat-card h-100">
             {% set icons = {'本周':'📅','本月':'📆','今年':'🏆','总计':'📚'} %}
             <div class="stat-label">{{ icons.get(label, '') }} {{ label }}</div>
             <div class="stat-value">
