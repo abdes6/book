@@ -3,7 +3,7 @@ from flask import render_template, jsonify, redirect, url_for, request as flask_
 from flask import current_app
 from flask_login import current_user
 from app.main import bp
-from app.extensions import frontend_login_required
+from app.extensions import frontend_login_required, csrf
 from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, ReadGoal, db
 from app.weread.api import get_shelf
 from app.weread.importer import import_highlights_for_book
@@ -185,6 +185,7 @@ def stats():
 
 
 @bp.route('/stats/goal/edit', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def edit_goal():
     user_id = int(current_user.get_id().replace('u_', ''))
