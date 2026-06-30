@@ -380,6 +380,15 @@ footer {
   border-top-color: var(--border-warm) !important;
 }
 
+/* ── Card equal-height helper ── */
+.card-equal {
+  display: flex;
+  flex-direction: column;
+}
+.card-equal .card-body {
+  flex: 1;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .hero-section {

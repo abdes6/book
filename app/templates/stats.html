@@ -9,11 +9,12 @@
     <h3>阅读统计</h3>
 </div>
 
-<div class="row g-3 mb-5">
+<div class="row g-3 mb-4">
     {% for data, label in [(weekly,'本周'), (monthly,'本月'), (annually,'今年'), (overall,'总计')] %}
     <div class="col-md-3 col-6">
         <div class="stat-card">
-            <div class="stat-label">{{ label }}</div>
+            {% set icons = {'本周':'📅','本月':'📆','今年':'🏆','总计':'📚'} %}
+            <div class="stat-label">{{ icons.get(label, '') }} {{ label }}</div>
             <div class="stat-value">
                 {% if data and data.totalReadTime is defined %}
                 {{ data.totalReadTime | fmt_seconds }}
@@ -38,9 +39,9 @@
     {% endfor %}
 </div>
 
-<div class="row mt-4">
-  <div class="col-12">
-    <div class="card">
+<div class="row mt-3">
+  <div class="col-12 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">📊 阅读趋势</h5>
         <canvas id="dailyTrendChart" height="100"></canvas>
@@ -49,17 +50,17 @@
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card">
+<div class="row mt-3">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">🥧 分类分布</h5>
         <canvas id="categoryChart" height="200"></canvas>
       </div>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="card">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">📈 月度趋势</h5>
         <canvas id="monthlyTrendChart" height="200"></canvas>
@@ -68,9 +69,9 @@
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-12">
-    <div class="card">
+<div class="row mt-3">
+  <div class="col-12 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">🌡️ 年度阅读日历</h5>
         <div id="heatmap-calendar" class="heatmap-container"></div>
@@ -79,17 +80,17 @@
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card">
+<div class="row mt-3">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">🕐 阅读时段分布</h5>
         <canvas id="timeRadarChart" height="200"></canvas>
       </div>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="card">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
       <div class="card-body">
         <h5 class="card-title">🎯 阅读目标</h5>
         {% set ins = chart_data.insights if chart_data else None %}
@@ -134,109 +135,93 @@
   </div>
 </div>
 
+<div class="row mt-3 g-3">
 {% if overall and overall.readLongest %}
-<div class="card mb-4">
-    <div class="card-header">阅读排行</div>
-    <div class="card-body">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
+      <div class="card-header">阅读排行</div>
+      <div class="card-body">
         <div class="row">
-            <div class="col-md-6">
-                <h6 class="text-secondary mb-3">总排行</h6>
-                <ol class="list-group list-group-numbered">
-                    {% for item in overall.readLongest %}
-                    {% set b = item.get('book') or {} %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>{{ b.get('title', '未知') }}</span>
-                        <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
-                    </li>
-                    {% endfor %}
-                </ol>
-            </div>
-            {% if annually and annually.readLongest %}
-            <div class="col-md-6">
-                <h6 class="text-secondary mb-3">今年排行</h6>
-                <ol class="list-group list-group-numbered">
-                    {% for item in annually.readLongest %}
-                    {% set b = item.get('book') or {} %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>{{ b.get('title', '未知') }}</span>
-                        <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
-                    </li>
-                    {% endfor %}
-                </ol>
-            </div>
-            {% endif %}
+          <div class="col-md-6">
+            <h6 class="text-secondary mb-3">总排行</h6>
+            <ol class="list-group list-group-numbered">
+              {% for item in overall.readLongest %}
+              {% set b = item.get('book') or {} %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              </li>
+              {% endfor %}
+            </ol>
+          </div>
+          {% if annually and annually.readLongest %}
+          <div class="col-md-6">
+            <h6 class="text-secondary mb-3">今年排行</h6>
+            <ol class="list-group list-group-numbered">
+              {% for item in annually.readLongest %}
+              {% set b = item.get('book') or {} %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              </li>
+              {% endfor %}
+            </ol>
+          </div>
+          {% endif %}
         </div>
+      </div>
     </div>
-</div>
+  </div>
 {% endif %}
-
 {% if overall and (overall.readStat or overall.preferCategory or overall.preferTimeWord or overall.preferAuthor) %}
-<div class="card mb-4">
-    <div class="card-header">偏好分析</div>
-    <div class="card-body">
+  <div class="col-md-6 d-flex">
+    <div class="card h-100 w-100">
+      <div class="card-header">偏好分析</div>
+      <div class="card-body">
         {% if overall.readStat %}
         <h6 class="text-secondary mb-3">阅读统计</h6>
         <div class="d-flex flex-wrap gap-2 mb-4">
-            {% for s in overall.readStat %}
-            <span class="badge bg-secondary">{{ s.stat }} {{ s.counts }}</span>
-            {% endfor %}
+          {% for s in overall.readStat %}
+          <span class="badge bg-secondary">{{ s.stat }} {{ s.counts }}</span>
+          {% endfor %}
         </div>
         {% endif %}
 
         {% if overall.preferCategory %}
         <h6 class="text-secondary mb-3">偏好分类</h6>
         <div class="d-flex flex-wrap gap-2 mb-4">
-            {% for cat in overall.preferCategory %}
-            <div class="card" style="width:150px;">
-                <div class="card-body text-center p-3">
-                    <h6 class="mb-1">{{ cat.get('categoryTitle', '') }}</h6>
-                    <small class="text-muted">{{ cat.readingCount }}本</small>
-                </div>
+          {% for cat in overall.preferCategory %}
+          <div class="card" style="width:150px;">
+            <div class="card-body text-center p-3">
+              <h6 class="mb-1">{{ cat.get('categoryTitle', '') }}</h6>
+              <small class="text-muted">{{ cat.readingCount }}本</small>
             </div>
-            {% endfor %}
+          </div>
+          {% endfor %}
         </div>
         {% endif %}
 
         {% if overall.preferTimeWord or overall.preferAuthor %}
         <div class="row">
-            {% if overall.preferTimeWord %}
-            <div class="col-md-6 mb-2">
-                <strong>时段偏好：</strong> {{ overall.preferTimeWord }}
-            </div>
-            {% endif %}
-            {% if overall.preferAuthor %}
-            <div class="col-md-6 mb-2">
-                <strong>偏好作者：</strong>
-                {% for a in overall.preferAuthor %}
-                {{ a.name }}{% if not loop.last %} · {% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
+          {% if overall.preferTimeWord %}
+          <div class="col-md-6 mb-2">
+            <strong>时段偏好：</strong> {{ overall.preferTimeWord }}
+          </div>
+          {% endif %}
+          {% if overall.preferAuthor %}
+          <div class="col-md-6 mb-2">
+            <strong>偏好作者：</strong>
+            {% for a in overall.preferAuthor %}
+            {{ a.name }}{% if not loop.last %} · {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
         {% endif %}
+      </div>
     </div>
-</div>
+  </div>
 {% endif %}
-
-<div class="card mb-4">
-    <div class="card-header">周期对比</div>
-    <div class="card-body">
-        <div class="row g-3">
-            {% for data, label in [(weekly,'本周'), (monthly,'本月'), (annually,'今年'), (overall,'总计')] %}
-            {% if data %}
-            <div class="col-md-3 col-6">
-                <div class="text-center p-3" style="background:var(--cream);border-radius:var(--radius);">
-                    <div class="text-secondary small mb-1">{{ label }}</div>
-                    <div class="h5 mb-0" style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:var(--warm-accent);">
-                        {{ data.get('totalReadTime', 0) | fmt_seconds }}
-                    </div>
-                    <small class="text-muted">{{ data.get('readDays', 0) }}天</small>
-                </div>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-    </div>
 </div>
 
 <div class="modal fade" id="goalModal" tabindex="-1">
