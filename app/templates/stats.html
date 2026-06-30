@@ -91,26 +91,44 @@
   <div class="col-md-6">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title">🔥 阅读习惯</h5>
-        <div>
-          {% if chart_data and chart_data.insights %}
-          <div class="d-flex justify-content-around text-center mb-3">
-            <div>
-              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.current_streak }}</div>
-              <small class="text-muted">当前连续(天)</small>
-            </div>
-            <div>
-              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.longest_streak }}</div>
-              <small class="text-muted">最长连续(天)</small>
-            </div>
-            <div>
-              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.most_active_day or '--' }}</div>
-              <small class="text-muted">最活跃</small>
-            </div>
+        <h5 class="card-title">🎯 阅读目标</h5>
+        {% set ins = chart_data.insights if chart_data else None %}
+        {% if ins %}
+        <div class="mb-3">
+          <small class="text-muted">🎯 年度目标</small>
+          <div class="d-flex justify-content-between">
+            <span>{{ '{:d}'.format(ins.year_goal_current // 3600) }}h / {{ '{:d}'.format(ins.year_goal_target // 3600) if ins.year_goal_target else 0 }}h</span>
+            <span>{{ '%.0f'|format(ins.year_goal_current / ins.year_goal_target * 100) if ins.year_goal_target else 0 }}%</span>
           </div>
-          {% endif %}
-          <p class="text-muted mb-0"><small>🎯 阅读目标即将上线</small></p>
+          <div class="progress" style="height:8px">
+            <div class="progress-bar bg-danger" role="progressbar"
+                 style="width:{{ '%.0f'|format(ins.year_goal_current / ins.year_goal_target * 100) if ins.year_goal_target else 0 }}%"></div>
+          </div>
         </div>
+        <div class="mb-3">
+          <small class="text-muted">📅 本月目标</small>
+          <div class="d-flex justify-content-between">
+            <span>{{ '{:d}'.format(ins.month_goal_current // 3600) }}h / {{ '{:d}'.format(ins.month_goal_target // 3600) if ins.month_goal_target else 0 }}h</span>
+            <span>{{ '%.0f'|format(ins.month_goal_current / ins.month_goal_target * 100) if ins.month_goal_target else 0 }}%</span>
+          </div>
+          <div class="progress" style="height:8px">
+            <div class="progress-bar bg-warning" role="progressbar"
+                 style="width:{{ '%.0f'|format(ins.month_goal_current / ins.month_goal_target * 100) if ins.month_goal_target else 0 }}%"></div>
+          </div>
+        </div>
+        <div>
+          <small class="text-muted">🔥 连续阅读</small>
+          <div class="d-flex justify-content-between">
+            <span>当前: <strong>{{ ins.current_streak }}</strong> 天</span>
+            <span>最长: <strong>{{ ins.longest_streak }}</strong> 天</span>
+            <span>最爱: <strong>{{ ins.most_active_day or '--' }}</strong></span>
+          </div>
+        </div>
+        <hr>
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#goalModal">设置目标</button>
+        {% else %}
+        <p class="text-muted">暂无数据</p>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -219,5 +237,34 @@
             {% endfor %}
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="goalModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form id="goalForm">
+        <div class="modal-header">
+          <h6 class="modal-title">设置阅读目标</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% set ins = chart_data.insights if chart_data else None %}
+          <div class="mb-3">
+            <label class="form-label">年度目标(小时)</label>
+            <input type="number" id="goal-year-input" class="form-control"
+                   value="{{ '{:d}'.format(ins.year_goal_target // 3600) if ins and ins.year_goal_target else 500 }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">本月目标(小时)</label>
+            <input type="number" id="goal-month-input" class="form-control"
+                   value="{{ '{:d}'.format(ins.month_goal_target // 3600) if ins and ins.month_goal_target else 50 }}">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary btn-sm">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}

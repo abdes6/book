@@ -1,10 +1,10 @@
 from datetime import datetime, date, timedelta
-from flask import render_template, jsonify, redirect, url_for
+from flask import render_template, jsonify, redirect, url_for, request as flask_request
 from flask import current_app
 from flask_login import current_user
 from app.main import bp
 from app.extensions import frontend_login_required
-from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, db
+from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, ReadGoal, db
 from app.weread.api import get_shelf
 from app.weread.importer import import_highlights_for_book
 from app.weread.stats_sync import sync_all_stats
@@ -145,6 +145,23 @@ def stats():
             most_active_avg = float(row.avg_time)
             most_active_day = label
 
+    now_dt = datetime.utcnow()
+    year_goal = ReadGoal.query.filter_by(
+        user_id=user_id, year=now_dt.year, month=None
+    ).first()
+    month_goal = ReadGoal.query.filter_by(
+        user_id=user_id, year=now_dt.year, month=now_dt.month
+    ).first()
+    yearly_seconds = db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
+        DailyReadStat.user_id == user_id,
+        extract('YEAR', DailyReadStat.date) == now_dt.year
+    ).scalar() or 0
+    monthly_seconds = db.session.query(func.sum(DailyReadStat.total_read_time)).filter(
+        DailyReadStat.user_id == user_id,
+        extract('YEAR', DailyReadStat.date) == now_dt.year,
+        extract('MONTH', DailyReadStat.date) == now_dt.month
+    ).scalar() or 0
+
     chart_data = {
         'dailyTrend': days_30,
         'calendar': year_days,
@@ -155,6 +172,10 @@ def stats():
             'current_streak': current_streak,
             'longest_streak': longest_streak,
             'most_active_day': most_active_day,
+            'year_goal_target': year_goal.target_read_time if year_goal else 0,
+            'year_goal_current': yearly_seconds,
+            'month_goal_target': month_goal.target_read_time if month_goal else 0,
+            'month_goal_current': monthly_seconds,
         }
     }
 
@@ -163,8 +184,37 @@ def stats():
                            chart_data=chart_data)
 
 
+@bp.route('/stats/goal/edit', methods=['POST'])
+@frontend_login_required
+def edit_goal():
+    user_id = int(current_user.get_id().replace('u_', ''))
+    year = flask_request.form.get('year', type=int, default=datetime.utcnow().year)
+    month = flask_request.form.get('month', type=int)
+    target = flask_request.form.get('target_read_time', type=int, default=0)
+    goal = ReadGoal.query.filter_by(user_id=user_id, year=year, month=month).first()
+    if goal:
+        goal.target_read_time = target
+    else:
+        goal = ReadGoal(user_id=user_id, year=year, month=month,
+                        target_read_time=target)
+        db.session.add(goal)
+    db.session.commit()
+    return jsonify({'ok': True})
 
 
+@bp.route('/stats/daily/<date_str>')
+@frontend_login_required
+def daily_detail(date_str):
+    try:
+        d = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'invalid date'}), 400
+    user_id = int(current_user.get_id().replace('u_', ''))
+    r = DailyReadStat.query.filter_by(user_id=user_id, date=d).first()
+    return jsonify({
+        'date': date_str,
+        'total_read_time': r.total_read_time if r else 0,
+    })
 @bp.route('/books')
 @frontend_login_required
 def book_list():

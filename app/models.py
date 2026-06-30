@@ -161,6 +161,22 @@ class DailyReadStat(db.Model):
     user = db.relationship("User", backref=db.backref("daily_read_stats", lazy="dynamic"))
 
 
+class ReadGoal(db.Model):
+    __tablename__ = "read_goal"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=True)
+    target_read_time = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
+                           onupdate=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("user_id", "year", "month"),)
+    user = db.relationship("User", backref=db.backref("read_goals", lazy="dynamic"))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     if user_id.startswith('u_'):

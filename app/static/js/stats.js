@@ -155,4 +155,20 @@ document.addEventListener("DOMContentLoaded", function () {
     style.textContent = ".heatmap-container { overflow-x: auto; }";
     document.head.appendChild(style);
   }
+
+  // ── 阅读目标表单提交 ──
+  var goalForm = document.getElementById("goalForm");
+  if (goalForm) {
+    goalForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var fd = new FormData();
+      fd.append("year", new Date().getFullYear());
+      fd.append("target_read_time", parseInt(document.getElementById("goal-year-input").value) * 3600);
+      fd.append("month", new Date().getMonth() + 1);
+      fd.append("target_read_time", parseInt(document.getElementById("goal-month-input").value) * 3600);
+      fetch("/stats/goal/edit", { method: "POST", body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function () { location.reload(); });
+    });
+  }
 });
