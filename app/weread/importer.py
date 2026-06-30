@@ -30,11 +30,13 @@ def import_shelf_to_db(user_id):
     imported = 0
     skipped = 0
     updated = 0
+    seen = set()
 
     for b in books_data:
         weread_id = str(b.get('bookId', ''))
-        if not weread_id:
+        if not weread_id or weread_id in seen:
             continue
+        seen.add(weread_id)
 
         existing = Book.query.filter_by(weread_book_id=weread_id, user_id=user_id).first()
         if existing:
@@ -73,6 +75,7 @@ def import_shelf_to_db(user_id):
             db.session.commit()
 
     db.session.commit()
+    _sync_cache[user_id] = time.time()
 
     return {
         'imported': imported,
@@ -98,7 +101,7 @@ def sync_shelf_for_user(user_id, ttl_seconds=300):
 
     for b in books_data:
         weread_id = str(b.get('bookId', ''))
-        if not weread_id:
+        if not weread_id or weread_id in api_ids:
             continue
         api_ids.add(weread_id)
 
