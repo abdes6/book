@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}阅读统计{% endblock %}
 {% block content %}
+{% if chart_data %}
+<script id="stats-chart-data" type="application/json">{{ chart_data | tojson | safe }}</script>
+{% endif %}
+
 <div class="section-heading mb-4">
     <h3>阅读统计</h3>
 </div>
@@ -32,6 +36,84 @@
         </div>
     </div>
     {% endfor %}
+</div>
+
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">📊 阅读趋势</h5>
+        <canvas id="dailyTrendChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">🥧 分类分布</h5>
+        <canvas id="categoryChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">📈 月度趋势</h5>
+        <canvas id="monthlyTrendChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">🌡️ 年度阅读日历</h5>
+        <div id="heatmap-calendar" class="heatmap-container"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">🕐 阅读时段分布</h5>
+        <canvas id="timeRadarChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">🔥 阅读习惯</h5>
+        <div>
+          {% if chart_data and chart_data.insights %}
+          <div class="d-flex justify-content-around text-center mb-3">
+            <div>
+              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.current_streak }}</div>
+              <small class="text-muted">当前连续(天)</small>
+            </div>
+            <div>
+              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.longest_streak }}</div>
+              <small class="text-muted">最长连续(天)</small>
+            </div>
+            <div>
+              <div class="h4 mb-0" style="color:var(--warm-accent)">{{ chart_data.insights.most_active_day or '--' }}</div>
+              <small class="text-muted">最活跃</small>
+            </div>
+          </div>
+          {% endif %}
+          <p class="text-muted mb-0"><small>🎯 阅读目标即将上线</small></p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% if overall and overall.readLongest %}
