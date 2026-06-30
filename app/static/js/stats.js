@@ -90,14 +90,27 @@ document.addEventListener("DOMContentLoaded", function () {
     var wrapper = document.createElement("div");
     wrapper.style.cssText = "overflow-x:auto;padding:4px 0";
 
+    var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) daysInMonth[1] = 29;
+    var emptyStart = startDay === 0 ? 6 : startDay - 1;
+    var totalDays = 365 + (daysInMonth[1] === 29 ? 1 : 0);
+    var totalCols = Math.ceil((emptyStart + totalDays) / 7);
+
     var monthRow = document.createElement("div");
-    monthRow.style.cssText = "display:flex;gap:3px;margin-bottom:4px;font-size:11px;color:#666;padding-left:32px";
-    ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"].forEach(function (m) {
-      var s = document.createElement("span");
-      s.textContent = m;
-      s.style.flex = "1";
-      monthRow.appendChild(s);
-    });
+    monthRow.style.cssText = "display:grid;grid-template-columns:repeat(" + totalCols + ",14px);gap:3px;margin-bottom:4px;font-size:11px;color:#666;padding-left:32px";
+    var cumDays = 0;
+    for (var mi = 0; mi < 12; mi++) {
+      var firstCol = Math.floor((emptyStart + cumDays) / 7);
+      var span = daysInMonth[mi];
+      var lastCol = Math.ceil((emptyStart + cumDays + span) / 7);
+      var label = document.createElement("span");
+      label.textContent = (mi + 1) + "月";
+      label.style.gridColumn = (firstCol + 1) + " / " + (lastCol + 1);
+      label.style.textAlign = "left";
+      label.style.overflow = "hidden";
+      monthRow.appendChild(label);
+      cumDays += span;
+    }
     wrapper.appendChild(monthRow);
 
     var gridWrap = document.createElement("div");
@@ -116,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var grid = document.createElement("div");
     grid.style.cssText = "display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;gap:3px";
 
-    var emptyStart = startDay === 0 ? 6 : startDay - 1;
     for (var i = 0; i < emptyStart; i++) {
       var e = document.createElement("div");
       e.style.width = "14px";
