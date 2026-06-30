@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app.extensions import db, login_manager
@@ -117,6 +118,47 @@ class NoteImage(db.Model):
 
     note_ref = db.relationship('Note', backref=db.backref('images', lazy='dynamic',
                                 order_by='NoteImage.uploaded_at'))
+
+
+class ReadStat(db.Model):
+    __tablename__ = "read_stat"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    mode = db.Column(db.String(20), nullable=False)
+    period_start = db.Column(db.DateTime, nullable=False)
+    period_end = db.Column(db.DateTime, nullable=False)
+    total_read_time = db.Column(db.Integer, default=0)
+    read_days = db.Column(db.Integer, default=0)
+    day_avg_read_time = db.Column(db.Integer, default=0)
+    compare = db.Column(db.Float, nullable=True)
+    read_longest = db.Column(db.JSON, nullable=True)
+    read_stat = db.Column(db.JSON, nullable=True)
+    prefer_category = db.Column(db.JSON, nullable=True)
+    prefer_time_word = db.Column(db.String(100), nullable=True)
+    prefer_author = db.Column(db.JSON, nullable=True)
+    prefer_time = db.Column(db.JSON, nullable=True)
+    read_rate = db.Column(db.Float, nullable=True)
+    wr_read_time = db.Column(db.Integer, nullable=True)
+    wr_listen_time = db.Column(db.Integer, nullable=True)
+    raw_data = db.Column(db.JSON, nullable=True)
+    synced_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("user_id", "mode", "period_start"),)
+    user = db.relationship("User", backref=db.backref("read_stats", lazy="dynamic"))
+
+
+class DailyReadStat(db.Model):
+    __tablename__ = "daily_read_stat"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    total_read_time = db.Column(db.Integer, default=0)
+    synced_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (UniqueConstraint("user_id", "date"),)
+    user = db.relationship("User", backref=db.backref("daily_read_stats", lazy="dynamic"))
 
 
 @login_manager.user_loader
