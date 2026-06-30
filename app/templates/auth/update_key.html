@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}设置 API Key{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h3 class="text-center mb-1">设置 API Key</h3>
+        <p class="text-center text-muted mb-4">请填写微信读书 API Key 以同步书架</p>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label class="form-label">微信读书 API Key</label>
+                <input type="text" name="weread_api_key" class="form-control" placeholder="请输入 API Key" required>
+                <div class="text-muted small mt-1">在 https://open.work.weixin.qq.com 获取</div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">保存</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

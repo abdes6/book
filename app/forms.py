@@ -34,7 +34,6 @@ class UserLoginForm(FlaskForm):
     email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
     password = PasswordField('密码', validators=[DataRequired()])
     remember = BooleanField('记住我')
-    weread_api_key = StringField('微信读书 API Key', validators=[DataRequired(message='API Key 为必填项')])
     submit = SubmitField('登录')
 
 
@@ -43,4 +42,5 @@ class RegisterForm(FlaskForm):
     email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
     password = PasswordField('密码', validators=[DataRequired(), Length(6, 50, message='密码至少6位')])
     confirm = PasswordField('确认密码', validators=[DataRequired(), EqualTo('password', message='两次密码不一致')])
+    weread_api_key = StringField('微信读书 API Key', validators=[DataRequired(message='API Key 为必填项')])
     submit = SubmitField('注册')

@@ -41,7 +41,7 @@ def sync_all_stats(user_id, ttl_seconds=300):
             return
 
     overall = get_readdata("overall")
-    if not overall or not overall.get("totalReadTime"):
+    if not overall:
         logger.warning("WeRead API overall failed")
         return
 

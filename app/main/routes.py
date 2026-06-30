@@ -71,8 +71,8 @@ def stats():
     monthly = _fmt(monthly_raw)
     annually = _fmt(annually_raw)
     overall = _fmt(overall_raw)
-    if overall and overall.get('totalReadTime') and overall.get('readDays'):
-        if not overall.get('dayAverageReadTime'):
+    if overall and overall.get('totalReadTime') is not None and overall.get('readDays'):
+        if not overall.get('dayAverageReadTime') and overall['readDays']:
             overall['dayAverageReadTime'] = overall['totalReadTime'] // overall['readDays']
 
     today = date.today()

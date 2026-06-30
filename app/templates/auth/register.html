@@ -27,6 +27,12 @@
                 {{ form.confirm(class="form-control", placeholder="再次输入密码") }}
                 {% for e in form.confirm.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
             </div>
+            <div class="mb-3">
+                {{ form.weread_api_key.label(class="form-label") }}
+                {{ form.weread_api_key(class="form-control", placeholder="请输入微信读书 API Key (从开放平台获取)") }}
+                {% for e in form.weread_api_key.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                <div class="text-muted small mt-1">在 https://open.work.weixin.qq.com 获取</div>
+            </div>
             {{ form.submit(class="btn btn-primary w-100") }}
         </form>
         <p class="text-center text-muted mt-3 mb-0 small">
