@@ -223,6 +223,12 @@ def daily_detail(date_str):
 @frontend_login_required
 def book_list():
     from flask import request
+    from app.weread.importer import sync_shelf_for_user
+    try:
+        sync_shelf_for_user(current_user.id)
+    except Exception:
+        current_app.logger.warning('书架同步失败，显示缓存数据', exc_info=True)
+
     cid = request.args.get('category', type=int)
     sf = request.args.get('status')
     q = request.args.get('q', '').strip()

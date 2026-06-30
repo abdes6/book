@@ -1,8 +1,11 @@
+import time
 from datetime import datetime
 
 from app.extensions import db
 from app.models import Book, Category, Highlight
 from app.weread.api import get_shelf, get_bookmarklist
+
+_sync_cache = {}
 
 
 def parse_weread_category(category_str):
@@ -75,6 +78,83 @@ def import_shelf_to_db(user_id):
         'imported': imported,
         'skipped': skipped,
         'updated': updated,
+        'total': len(books_data),
+    }
+
+
+def sync_shelf_for_user(user_id, ttl_seconds=300):
+    now = time.time()
+    last = _sync_cache.get(user_id, 0)
+    if now - last < ttl_seconds:
+        return {'synced': False, 'reason': 'cached'}
+
+    data = get_shelf()
+    books_data = data.get('books', [])
+    api_ids = set()
+
+    imported = 0
+    updated = 0
+    deleted = 0
+
+    for b in books_data:
+        weread_id = str(b.get('bookId', ''))
+        if not weread_id:
+            continue
+        api_ids.add(weread_id)
+
+        existing = Book.query.filter_by(weread_book_id=weread_id, user_id=user_id).first()
+        if existing:
+            changed = False
+            if not existing.cover_url and b.get('cover'):
+                existing.cover_url = b.get('cover')
+                changed = True
+            status_new = 'done' if b.get('finishReading', 0) else 'reading'
+            if existing.status != status_new:
+                existing.status = status_new
+                changed = True
+            if not existing.imported:
+                existing.imported = True
+                changed = True
+            if changed:
+                updated += 1
+            continue
+
+        title = b.get('title', '')
+        author = b.get('author', '')
+        cat_name = parse_weread_category(b.get('category', ''))
+        cat_id = get_or_create_category(cat_name) if cat_name else None
+
+        book = Book(
+            user_id=user_id,
+            title=title,
+            author=author,
+            cover_url=b.get('cover', ''),
+            weread_book_id=weread_id,
+            imported=True,
+            category_id=cat_id,
+            status='done' if b.get('finishReading', 0) else 'reading',
+        )
+        db.session.add(book)
+        imported += 1
+
+    local_books = Book.query.filter(
+        Book.user_id == user_id,
+        Book.weread_book_id.isnot(None),
+        Book.weread_book_id != ''
+    ).all()
+    for book in local_books:
+        if book.weread_book_id not in api_ids:
+            Highlight.query.filter_by(book_id=book.id).delete()
+            db.session.delete(book)
+            deleted += 1
+
+    db.session.commit()
+    _sync_cache[user_id] = now
+
+    return {
+        'imported': imported,
+        'updated': updated,
+        'deleted': deleted,
         'total': len(books_data),
     }
 
