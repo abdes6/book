@@ -243,6 +243,7 @@
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <form id="goalForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
           <h6 class="modal-title">设置阅读目标</h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

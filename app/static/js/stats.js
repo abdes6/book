@@ -169,10 +169,13 @@ document.addEventListener("DOMContentLoaded", function () {
       var now = new Date();
       var yearVal = parseInt(document.getElementById("goal-year-input").value) * 3600;
       var monthVal = parseInt(document.getElementById("goal-month-input").value) * 3600;
+      var csrfToken = document.querySelector('#goalForm input[name="csrf_token"]').value;
       var fd1 = new FormData();
+      fd1.append("csrf_token", csrfToken);
       fd1.append("year", now.getFullYear());
       fd1.append("target_read_time", yearVal);
       var fd2 = new FormData();
+      fd2.append("csrf_token", csrfToken);
       fd2.append("year", now.getFullYear());
       fd2.append("month", now.getMonth() + 1);
       fd2.append("target_read_time", monthVal);
