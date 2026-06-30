@@ -14,9 +14,12 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
-            if form.weread_api_key.data:
-                user.weread_api_key = form.weread_api_key.data
-                db.session.commit()
+            user.weread_api_key = form.weread_api_key.data
+            if not user.shelf_synced:
+                from app.weread.importer import import_shelf_to_db
+                import_shelf_to_db(user.id)
+                user.shelf_synced = True
+            db.session.commit()
             flash('登录成功', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('main.index'))

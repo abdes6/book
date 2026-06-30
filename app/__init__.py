@@ -84,11 +84,12 @@ def create_app(config_class=Config):
         init_db()
 
     @app.cli.command('import-weread')
-    def import_weread_command():
+    @click.option('--user-id', type=int, required=True, help='用户 ID')
+    def import_weread_command(user_id):
         import click
         from app.weread.importer import import_shelf_to_db
-        click.echo('正在从微信读书导入书架...')
-        result = import_shelf_to_db()
+        click.echo(f'正在为用户 {user_id} 从微信读书导入书架...')
+        result = import_shelf_to_db(user_id)
         click.echo(f'完成！新增 {result["imported"]} 本，'
                     f'跳过 {result["skipped"]} 本，更新 {result["updated"]} 本')
 
@@ -103,19 +104,21 @@ def create_app(config_class=Config):
         remove_old_categories()
 
     @app.cli.command('update-categories')
-    def update_categories_command():
+    @click.option('--user-id', type=int, required=True, help='用户 ID')
+    def update_categories_command(user_id):
         import click
         from app.weread.importer import update_categories_from_api
-        click.echo('正在从微信读书更新分类...')
-        result = update_categories_from_api()
+        click.echo(f'正在为用户 {user_id} 从微信读书更新分类...')
+        result = update_categories_from_api(user_id)
         click.echo(f'完成！{result["matched"]} 本已分类，{result["skipped"]} 本未匹配')
 
     @app.cli.command('import-highlights')
-    def import_highlights_command():
+    @click.option('--user-id', type=int, default=None, help='用户 ID，不填则导入所有用户')
+    def import_highlights_command(user_id):
         import click
         click.echo('正在批量导入划线笔记...')
         from app.cli import import_all_highlights
-        import_all_highlights()
+        import_all_highlights(user_id=user_id)
 
     @app.cli.command('sync-stats')
     @click.option('--force', is_flag=True, help='强制全量重新同步')

@@ -34,7 +34,7 @@ def book_notes(book_id):
 @bp.route('/create/<int:book_id>', methods=['GET', 'POST'])
 @frontend_login_required
 def note_create(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first_or_404()
     form = NoteForm()
     if form.validate_on_submit():
         note = Note(

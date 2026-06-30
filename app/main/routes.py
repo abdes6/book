@@ -20,7 +20,7 @@ def index():
         if data and 'books' in data:
             sorted_books = sorted(data.get('books', []), key=lambda b: b.get('readUpdateTime', 0) or 0, reverse=True)
             for b in sorted_books[:10]:
-                local = Book.query.filter_by(weread_book_id=str(b.get('bookId', ''))).first()
+                local = Book.query.filter_by(weread_book_id=str(b.get('bookId', '')), user_id=current_user.id).first()
                 weread_books.append({
                     'title': b.get('title', ''),
                     'author': b.get('author', ''),
@@ -227,7 +227,7 @@ def book_list():
     sf = request.args.get('status')
     q = request.args.get('q', '').strip()
     page = request.args.get('page', 1, type=int)
-    query = Book.query
+    query = Book.query.filter_by(user_id=current_user.id)
     if cid:
         query = query.filter_by(category_id=cid)
     if sf in ('reading', 'done'):
@@ -243,7 +243,7 @@ def book_list():
 @bp.route('/books/<int:id>')
 @frontend_login_required
 def book_detail(id):
-    book = Book.query.get_or_404(id)
+    book = Book.query.filter_by(id=id, user_id=current_user.id).first_or_404()
     book.last_viewed_at = datetime.now()
     db.session.commit()
     return render_template('books/detail.html', book=book)
@@ -252,16 +252,16 @@ def book_detail(id):
 @bp.route('/books/<int:id>/highlights')
 @frontend_login_required
 def book_highlights(id):
-    book = Book.query.get_or_404(id)
-    exists = Highlight.query.filter_by(book_id=book.id).first()
+    book = Book.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+    exists = Highlight.query.filter_by(book_id=book.id, user_id=current_user.id).first()
     if not exists and book.weread_book_id:
         try:
-            import_highlights_for_book(book)
+            import_highlights_for_book(book, current_user.id)
         except Exception as e:
             current_app.logger.warning('导入划线失败: %s', e)
             return jsonify({'highlights': [], 'error': '导入划线失败: ' + str(e)}), 500
 
-    highlights = Highlight.query.filter_by(book_id=book.id).order_by(
+    highlights = Highlight.query.filter_by(book_id=book.id, user_id=current_user.id).order_by(
         Highlight.chapter_uid, Highlight.created_at).all()
 
     color_map = {0: '#F9F3A7', 1: '#B5D8B5', 2: '#A7C7E7', 3: '#F0C0C0', 4: '#F5C792', 5: '#E8D5B7'}

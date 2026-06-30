@@ -20,7 +20,7 @@ def get_or_create_category(name):
     return cat.id
 
 
-def import_shelf_to_db():
+def import_shelf_to_db(user_id):
     data = get_shelf()
     books_data = data.get('books', [])
 
@@ -33,7 +33,7 @@ def import_shelf_to_db():
         if not weread_id:
             continue
 
-        existing = Book.query.filter_by(weread_book_id=weread_id).first()
+        existing = Book.query.filter_by(weread_book_id=weread_id, user_id=user_id).first()
         if existing:
             changed = False
             if not existing.cover_url and b.get('cover'):
@@ -54,6 +54,7 @@ def import_shelf_to_db():
         cat_id = get_or_create_category(cat_name) if cat_name else None
 
         book = Book(
+            user_id=user_id,
             title=title,
             author=author,
             cover_url=b.get('cover', ''),
@@ -78,7 +79,7 @@ def import_shelf_to_db():
     }
 
 
-def update_categories_from_api():
+def update_categories_from_api(user_id):
     data = get_shelf()
     books_data = data.get('books', [])
 
@@ -90,7 +91,7 @@ def update_categories_from_api():
         if not weread_id:
             continue
 
-        book = Book.query.filter_by(weread_book_id=weread_id).first()
+        book = Book.query.filter_by(weread_book_id=weread_id, user_id=user_id).first()
         if not book:
             continue
 
@@ -107,7 +108,7 @@ def update_categories_from_api():
     return {'matched': matched, 'skipped': skipped, 'total': len(books_data)}
 
 
-def import_highlights_for_book(book):
+def import_highlights_for_book(book, user_id):
     if not book.weread_book_id:
         return {'imported': 0, 'total': 0}
 
@@ -126,6 +127,7 @@ def import_highlights_for_book(book):
             continue
         ch_uid = item.get('chapterUid', 0)
         hl = Highlight(
+            user_id=user_id,
             book_id=book.id,
             weread_bookmark_id=bmid,
             chapter_uid=ch_uid,

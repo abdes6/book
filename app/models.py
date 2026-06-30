@@ -20,9 +20,10 @@ class Book(db.Model):
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     title = db.Column(db.String(200), nullable=False, index=True)
     author = db.Column(db.String(100))
-    isbn = db.Column(db.String(20), unique=True)
+    isbn = db.Column(db.String(20))
     cover_url = db.Column(db.String(500))
     summary = db.Column(db.Text)
     rating = db.Column(db.Numeric(2, 1), default=0.0)
@@ -34,6 +35,7 @@ class Book(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     last_viewed_at = db.Column(db.DateTime, nullable=True)
+    owner = db.relationship('User', backref=db.backref('books', lazy='dynamic'))
     highlights = db.relationship('Highlight', backref='book', lazy='dynamic',
                                  order_by='Highlight.chapter_uid, Highlight.created_at')
 
@@ -45,6 +47,7 @@ class Highlight(db.Model):
     __tablename__ = 'highlights'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
     weread_bookmark_id = db.Column(db.String(100), nullable=False)
     chapter_uid = db.Column(db.Integer, default=0)
@@ -65,6 +68,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     weread_api_key = db.Column(db.String(200), default='', nullable=True)
+    shelf_synced = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

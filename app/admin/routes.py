@@ -131,7 +131,7 @@ def category_delete(id):
 def import_weread():
     from app.weread.importer import import_shelf_to_db
     try:
-        result = import_shelf_to_db()
+        result = import_shelf_to_db(user_id=1)
         flash(f'导入成功！新增 {result["imported"]} 本，跳过 {result["skipped"]} 本，更新 {result["updated"]} 本', 'success')
     except Exception as e:
         flash(f'导入失败：{e}', 'danger')
