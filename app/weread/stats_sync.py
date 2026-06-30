@@ -54,7 +54,7 @@ def sync_all_stats(user_id):
             user_id=user_id, mode="annually",
             period_start=datetime(year, 1, 1)
         ).first()
-        if existing:
+        if existing and year != current_year:
             continue
         ts = int(datetime(year, 7, 1).timestamp())
         data = get_readdata("annually", base_time=ts)
