@@ -5,11 +5,15 @@
     <div class="col-lg-8">
         <div class="d-flex justify-content-between align-items-start mb-3">
             <h3>{{ note.title }}</h3>
-            <div>
+            <div class="d-flex gap-1">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">导出</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('notes.export_markdown', id=note.id) }}">Markdown (.md)</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('notes.export_pdf', id=note.id) }}">HTML (可在浏览器打印为PDF)</a></li>
+                    </ul>
+                </div>
                 <a href="{{ url_for('notes.note_edit', id=note.id) }}" class="btn btn-sm btn-outline-primary">编辑</a>
-                <form method="post" action="{{ url_for('notes.note_delete', id=note.id) }}" style="display:inline" onsubmit="return confirm('确定删除？')">
-                    <button class="btn btn-sm btn-outline-danger">删除</button>
-                </form>
             </div>
         </div>
         <p class="text-muted small mb-4">

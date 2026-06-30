@@ -2,7 +2,8 @@ import os
 import json
 import uuid
 from datetime import datetime
-from flask import render_template, redirect, url_for, flash, request, jsonify, current_app
+from urllib.parse import quote
+from flask import render_template, redirect, url_for, flash, request, jsonify, current_app, Response, abort
 from flask_login import current_user
 from werkzeug.utils import secure_filename
 from app.extensions import csrf, frontend_login_required
@@ -141,6 +142,33 @@ def note_delete(id):
     db.session.commit()
     flash('笔记已删除', 'success')
     return redirect(url_for('main.book_detail', id=book_id, _anchor='mynotes'))
+
+
+@bp.route('/<int:id>/export/markdown')
+@frontend_login_required
+def export_markdown(id):
+    note = Note.query.get_or_404(id)
+    if note.user_id != current_user.id:
+        abort(403)
+    return Response(
+        note.content or '',
+        mimetype='text/markdown',
+        headers={'Content-Disposition': f"attachment; filename=\"note.md\"; filename*=UTF-8''{quote(note.title + '.md')}"}
+    )
+
+
+@bp.route('/<int:id>/export/pdf')
+@frontend_login_required
+def export_pdf(id):
+    note = Note.query.get_or_404(id)
+    if note.user_id != current_user.id:
+        abort(403)
+    html = render_template('notes/export_pdf.html', note=note)
+    return Response(
+        html,
+        mimetype='text/html',
+        headers={'Content-Disposition': f"attachment; filename=\"note.html\"; filename*=UTF-8''{quote(note.title + '.html')}"}
+    )
 
 
 @bp.route('/upload-image', methods=['POST'])

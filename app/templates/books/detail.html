@@ -105,14 +105,12 @@ fetch('{{ url_for("notes.book_notes", book_id=book.id) }}')
             var html = '';
             data.forEach(function(n) {
                 var detailUrl = '{{ url_for("notes.note_detail", id=0) }}'.replace('/0', '/' + n.id);
-                var editUrl = '{{ url_for("notes.note_edit", id=0) }}'.replace('/0', '/' + n.id);
                 var deleteUrl = '{{ url_for("notes.note_delete", id=0) }}'.replace('/0', '/' + n.id);
                 html += '<div class="card mb-2">';
                 html += '<div class="card-body">';
                 html += '<h5 class="card-title"><a href="' + detailUrl + '">' + escapeHtml(n.title) + '</a></h5>';
                 html += '<p class="card-text text-muted small">' + escapeHtml(n.preview) + '</p>';
                 html += '<p class="card-text"><small class="text-muted">' + n.updated_at + '</small>';
-                html += ' <a href="' + editUrl + '" class="btn btn-sm btn-outline-primary">编辑</a>';
                 html += ' <form method="post" action="' + deleteUrl + '" style="display:inline" onsubmit="return confirm(\'确定删除？\')"><button class="btn btn-sm btn-outline-danger">删除</button></form>';
                 html += '</p></div></div>';
             });
