@@ -144,28 +144,30 @@
         <div class="row">
           <div class="col-md-6">
             <h6 class="text-secondary mb-3">总排行</h6>
-            <ol class="list-group list-group-numbered">
+            <ul class="list-group list-group-flush">
               {% for item in overall.readLongest %}
               {% set b = item.get('book') or {} %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ b.get('title', '未知') }}</span>
-                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              <li class="list-group-item d-flex align-items-center px-0">
+                <span class="text-muted me-2 flex-shrink-0" style="min-width:1.5em;font-size:0.85em;">{{ loop.index }}.</span>
+                <span class="flex-grow-1 text-truncate me-2">{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small flex-shrink-0">{{ item.readTime | fmt_seconds }}</span>
               </li>
               {% endfor %}
-            </ol>
+            </ul>
           </div>
           {% if annually and annually.readLongest %}
           <div class="col-md-6">
             <h6 class="text-secondary mb-3">今年排行</h6>
-            <ol class="list-group list-group-numbered">
+            <ul class="list-group list-group-flush">
               {% for item in annually.readLongest %}
               {% set b = item.get('book') or {} %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ b.get('title', '未知') }}</span>
-                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              <li class="list-group-item d-flex align-items-center px-0">
+                <span class="text-muted me-2 flex-shrink-0" style="min-width:1.5em;font-size:0.85em;">{{ loop.index }}.</span>
+                <span class="flex-grow-1 text-truncate me-2">{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small flex-shrink-0">{{ item.readTime | fmt_seconds }}</span>
               </li>
               {% endfor %}
-            </ol>
+            </ul>
           </div>
           {% endif %}
         </div>
