@@ -83,89 +83,84 @@ document.addEventListener("DOMContentLoaded", function () {
   var heatEl = document.getElementById("heatmap-calendar");
   if (heatEl && data.calendar) {
     var year = new Date().getFullYear();
-    var startDate = new Date(year, 0, 1);
-    var endDate = new Date(year, 11, 31);
-    var startDay = startDate.getDay();
-
-    var wrapper = document.createElement("div");
-    wrapper.style.cssText = "overflow-x:auto;padding:4px 0";
+    var CELL = 14, GAP = 3, COL_W = CELL + GAP;
 
     var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) daysInMonth[1] = 29;
+
+    var startDate = new Date(year, 0, 1);
+    var startDay = startDate.getDay();
     var emptyStart = startDay === 0 ? 6 : startDay - 1;
     var totalDays = 365 + (daysInMonth[1] === 29 ? 1 : 0);
-    var totalCols = Math.ceil((emptyStart + totalDays) / 7);
+    var totalWeeks = Math.ceil((emptyStart + totalDays) / 7);
 
-    var monthRow = document.createElement("div");
-    monthRow.style.cssText = "display:grid;grid-template-columns:repeat(" + totalCols + ",14px);gap:3px;margin-bottom:4px;font-size:11px;color:#666;padding-left:32px";
-    var cumDays = 0;
-    for (var mi = 0; mi < 12; mi++) {
-      var firstCol = Math.floor((emptyStart + cumDays) / 7);
-      var span = daysInMonth[mi];
-      var lastCol = Math.ceil((emptyStart + cumDays + span) / 7);
-      var label = document.createElement("span");
-      label.textContent = (mi + 1) + "月";
-      label.style.gridColumn = (firstCol + 1) + " / " + (lastCol + 1);
-      label.style.textAlign = "left";
-      label.style.overflow = "hidden";
-      monthRow.appendChild(label);
-      cumDays += span;
-    }
-    wrapper.appendChild(monthRow);
-
-    var gridWrap = document.createElement("div");
-    gridWrap.style.cssText = "display:flex;gap:3px;align-items:stretch";
-
-    var dayCol = document.createElement("div");
-    dayCol.style.cssText = "display:grid;grid-template-rows:repeat(7,14px);gap:3px;font-size:10px;color:#999;text-align:right;padding-right:4px;padding-top:0";
-    ["一","三","五"].forEach(function (d) {
-      var s = document.createElement("span");
-      s.textContent = d;
-      s.style.lineHeight = "14px";
-      dayCol.appendChild(s);
-    });
-    gridWrap.appendChild(dayCol);
-
-    var grid = document.createElement("div");
-    grid.style.cssText = "display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;gap:3px";
-
-    for (var i = 0; i < emptyStart; i++) {
-      var e = document.createElement("div");
-      e.style.width = "14px";
-      e.style.height = "14px";
-      grid.appendChild(e);
-    }
-
-    function formatDate(d) {
+    function fmtDate(d) {
       var mm = String(d.getMonth() + 1).padStart(2, "0");
       var dd = String(d.getDate()).padStart(2, "0");
       return d.getFullYear() + "-" + mm + "-" + dd;
     }
 
-    for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      var iso = formatDate(d);
-      var secs = data.calendar[iso] || 0;
-      var cell = document.createElement("div");
-      cell.style.cssText = "width:14px;height:14px;border-radius:2px;cursor:pointer;position:relative";
-      if (secs === 0) cell.style.backgroundColor = "#ebedf0";
-      else if (secs < 1800) cell.style.backgroundColor = "#9be9a8";
-      else if (secs < 3600) cell.style.backgroundColor = "#40c463";
-      else if (secs < 7200) cell.style.backgroundColor = "#30a14e";
-      else cell.style.backgroundColor = "#216e39";
-      cell.title = iso + ": " + Math.round(secs / 60) + "分钟";
-      cell.addEventListener("click", (function (d, s) {
-        return function () { alert("\ud83d\udcc5 " + d + "\n\u23f1 " + Math.round(s / 60) + "\u5206\u949f"); };
-      })(iso, secs));
-      grid.appendChild(cell);
+    var wrapper = document.createElement("div");
+    wrapper.style.cssText = "overflow-x:auto;padding:4px 0";
+
+    // ── 月份标签行 ──
+    var monthWrap = document.createElement("div");
+    monthWrap.style.cssText = "position:relative;height:18px;margin-bottom:2px;font-size:11px;color:#666;margin-left:" + (CELL + GAP) + "px";
+
+    var cumDays = 0;
+    for (var mi = 0; mi < 12; mi++) {
+      var firstWeek = Math.floor((emptyStart + cumDays) / 7);
+      var lbl = document.createElement("span");
+      lbl.textContent = (mi + 1) + "月";
+      lbl.style.cssText = "position:absolute;left:" + (firstWeek * COL_W) + "px;top:0;white-space:nowrap";
+      monthWrap.appendChild(lbl);
+      cumDays += daysInMonth[mi];
+    }
+    wrapper.appendChild(monthWrap);
+
+    // ── 日历网格（星期列 + 日期方块在同一个 grid 中） ──
+    var grid = document.createElement("div");
+    grid.style.cssText = "display:grid;grid-template-columns:" + CELL + "px repeat(" + totalWeeks + ", " + CELL + "px);gap:" + GAP + "px";
+
+    for (var row = 0; row < 7; row++) {
+      // 第 0 列 = 星期标签
+      var wdCell = document.createElement("div");
+      wdCell.style.cssText = "width:" + CELL + "px;height:" + CELL + "px;font-size:10px;color:#999;display:flex;align-items:center;justify-content:flex-end";
+      if (row === 0) wdCell.textContent = "一";
+      else if (row === 2) wdCell.textContent = "三";
+      else if (row === 4) wdCell.textContent = "五";
+      grid.appendChild(wdCell);
+
+      // 第 1 ~ totalWeeks 列 = 日期方块
+      for (var col = 0; col < totalWeeks; col++) {
+        var cellIndex = col * 7 + row;
+        if (cellIndex < emptyStart || cellIndex >= emptyStart + totalDays) {
+          var empty = document.createElement("div");
+          empty.style.cssText = "width:" + CELL + "px;height:" + CELL + "px";
+          grid.appendChild(empty);
+        } else {
+          var d = new Date(startDate);
+          d.setDate(d.getDate() + (cellIndex - emptyStart));
+          var iso = fmtDate(d);
+          var secs = data.calendar[iso] || 0;
+          var cell = document.createElement("div");
+          cell.style.cssText = "width:" + CELL + "px;height:" + CELL + "px;border-radius:2px;cursor:pointer";
+          if (secs === 0) cell.style.backgroundColor = "#ebedf0";
+          else if (secs < 1800) cell.style.backgroundColor = "#9be9a8";
+          else if (secs < 3600) cell.style.backgroundColor = "#40c463";
+          else if (secs < 7200) cell.style.backgroundColor = "#30a14e";
+          else cell.style.backgroundColor = "#216e39";
+          cell.title = iso + ": " + Math.round(secs / 60) + "分钟";
+          cell.addEventListener("click", (function (di, si) {
+            return function () { alert("\ud83d\udcc5 " + di + "\n\u23f1 " + Math.round(si / 60) + "\u5206\u949f"); };
+          })(iso, secs));
+          grid.appendChild(cell);
+        }
+      }
     }
 
-    gridWrap.appendChild(grid);
-    wrapper.appendChild(gridWrap);
+    wrapper.appendChild(grid);
     heatEl.appendChild(wrapper);
-
-    var style = document.createElement("style");
-    style.textContent = ".heatmap-container { overflow-x: auto; }";
-    document.head.appendChild(style);
   }
 
   // ── 阅读目标表单提交 ──
