@@ -1,12 +1,14 @@
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from flask import render_template, jsonify, redirect, url_for
 from flask import current_app
 from flask_login import current_user
 from app.main import bp
 from app.extensions import frontend_login_required
-from app.models import Book, Category, Highlight, db
-from app.weread.api import get_shelf, get_readdata
+from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, db
+from app.weread.api import get_shelf
 from app.weread.importer import import_highlights_for_book
+from app.weread.stats_sync import sync_all_stats
+from sqlalchemy import func, extract
 
 
 @bp.route('/')
@@ -35,24 +37,132 @@ def index():
 @bp.route('/stats')
 @frontend_login_required
 def stats():
-    try:
-        weekly = get_readdata('weekly')
-    except Exception:
-        weekly = None
-    try:
-        monthly = get_readdata('monthly')
-    except Exception:
-        monthly = None
-    try:
-        annually = get_readdata('annually')
-    except Exception:
-        annually = None
-    try:
-        overall = get_readdata('overall')
-    except Exception:
-        overall = None
+    user_id = int(current_user.get_id().replace('u_', ''))
+    sync_all_stats(user_id)
+
+    def _find_stat(mode, period_start=None):
+        q = ReadStat.query.filter_by(user_id=user_id, mode=mode)
+        if period_start:
+            q = q.filter_by(period_start=period_start)
+        return q.order_by(ReadStat.period_start.desc()).first()
+
+    weekly_raw = _find_stat('weekly')
+    monthly_raw = _find_stat('monthly')
+    annually_raw = _find_stat('annually',
+                              period_start=datetime(datetime.utcnow().year, 1, 1))
+    overall_raw = _find_stat('overall')
+
+    def _fmt(s):
+        if not s:
+            return None
+        return {
+            'totalReadTime': s.total_read_time,
+            'readDays': s.read_days,
+            'dayAverageReadTime': s.day_avg_read_time,
+            'compare': s.compare,
+            'readLongest': s.read_longest,
+            'readStat': s.read_stat,
+            'preferCategory': s.prefer_category,
+            'preferTimeWord': s.prefer_time_word,
+            'preferAuthor': s.prefer_author,
+        }
+
+    weekly = _fmt(weekly_raw)
+    monthly = _fmt(monthly_raw)
+    annually = _fmt(annually_raw)
+    overall = _fmt(overall_raw)
+
+    today = date.today()
+    days_30 = []
+    for i in range(29, -1, -1):
+        d = today - timedelta(days=i)
+        r = DailyReadStat.query.filter_by(user_id=user_id, date=d).first()
+        seconds = r.total_read_time if r else 0
+        days_30.append({'date': d.isoformat(), 'minutes': round(seconds / 60, 1)})
+
+    year_days = {}
+    year_rows = DailyReadStat.query.filter(
+        DailyReadStat.user_id == user_id,
+        extract('YEAR', DailyReadStat.date) == datetime.utcnow().year
+    ).all()
+    for r in year_rows:
+        year_days[r.date.isoformat()] = r.total_read_time
+
+    months_12 = []
+    for i in range(11, -1, -1):
+        m = datetime.utcnow().month - i
+        y = datetime.utcnow().year
+        if m <= 0:
+            m += 12
+            y -= 1
+        ps = datetime(y, m, 1)
+        r = _find_stat('monthly', period_start=ps)
+        seconds = r.total_read_time if r else 0
+        months_12.append({'month': f'{y}-{m:02d}', 'minutes': round(seconds / 60, 1)})
+
+    categories = []
+    if overall and overall.get('preferCategory'):
+        categories = overall['preferCategory']
+
+    prefer_time = []
+    if overall_raw and overall_raw.prefer_time:
+        prefer_time = overall_raw.prefer_time
+
+    daily_records = DailyReadStat.query.filter(
+        DailyReadStat.user_id == user_id,
+    ).order_by(DailyReadStat.date.desc()).all()
+
+    current_streak = 0
+    for r in daily_records:
+        if r.total_read_time > 0:
+            current_streak += 1
+        else:
+            break
+
+    longest_streak = 0
+    streak = 0
+    for r in sorted(daily_records, key=lambda x: x.date):
+        if r.total_read_time > 0:
+            streak += 1
+            longest_streak = max(longest_streak, streak)
+        else:
+            streak = 0
+
+    weekday_names = ['', '周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    weekday_rows = db.session.query(
+        extract('DAYOFWEEK', DailyReadStat.date).label('dow'),
+        func.avg(DailyReadStat.total_read_time).label('avg_time')
+    ).filter(
+        DailyReadStat.user_id == user_id,
+        DailyReadStat.total_read_time > 0
+    ).group_by('dow').all()
+    most_active_day = ''
+    most_active_avg = 0
+    for row in weekday_rows:
+        idx = int(row.dow) if row.dow else 0
+        label = weekday_names[idx] if idx < len(weekday_names) else ''
+        if row.avg_time and float(row.avg_time) > most_active_avg:
+            most_active_avg = float(row.avg_time)
+            most_active_day = label
+
+    chart_data = {
+        'dailyTrend': days_30,
+        'calendar': year_days,
+        'monthlyTrend': months_12,
+        'categories': categories,
+        'preferTime': prefer_time,
+        'insights': {
+            'current_streak': current_streak,
+            'longest_streak': longest_streak,
+            'most_active_day': most_active_day,
+        }
+    }
+
     return render_template('stats.html', weekly=weekly, monthly=monthly,
-                           annually=annually, overall=overall)
+                           annually=annually, overall=overall,
+                           chart_data=chart_data)
+
+
 
 
 @bp.route('/books')
