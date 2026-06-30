@@ -122,13 +122,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var grid = document.createElement("div");
     grid.style.cssText = "display:grid;grid-template-columns:" + CELL + "px repeat(" + totalWeeks + ", " + CELL + "px);gap:" + GAP + "px";
 
+    var wdNames = ["一","二","三","四","五","六","日"];
     for (var row = 0; row < 7; row++) {
-      // 第 0 列 = 星期标签
       var wdCell = document.createElement("div");
       wdCell.style.cssText = "width:" + CELL + "px;height:" + CELL + "px;font-size:10px;color:#999;display:flex;align-items:center;justify-content:flex-end";
-      if (row === 0) wdCell.textContent = "一";
-      else if (row === 2) wdCell.textContent = "三";
-      else if (row === 4) wdCell.textContent = "五";
+      wdCell.textContent = wdNames[row];
       grid.appendChild(wdCell);
 
       // 第 1 ~ totalWeeks 列 = 日期方块
