@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (catCtx && data.categories && data.categories.length) {
     var catLabels = data.categories.map(function (c) { return c.categoryTitle || "其他"; });
     var catValues = data.categories.map(function (c) { return c.readingCount || c.val || 1; });
-    var catColors = ["#C0392B", "#E67E22", "#F1C40F", "#2ECC71", "#3498DB", "#9B59B6", "#1ABC9C", "#E91E63"];
+    var catColors = ["#C0392B", "#8B5E3C", "#D4A574", "#2C3E50", "#5A6C7D", "#2D7D46", "#2C6B8F", "#A67B3C"];
     new Chart(catCtx, {
       type: "doughnut",
       data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: catColors.slice(0, catLabels.length) }] },
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       type: "bar",
       data: {
         labels: data.monthlyTrend.map(function (d) { return d.month; }),
-        datasets: [{ label: "阅读时长(分钟)", data: data.monthlyTrend.map(function (d) { return d.minutes; }), backgroundColor: "rgba(52,152,219,0.6)", borderRadius: 3 }]
+        datasets: [{ label: "阅读时长(分钟)", data: data.monthlyTrend.map(function (d) { return d.minutes; }), backgroundColor: "rgba(212,165,116,0.7)", borderRadius: 3 }]
       },
       options: {
         responsive: true,
@@ -143,15 +143,16 @@ document.addEventListener("DOMContentLoaded", function () {
           var secs = data.calendar[iso] || 0;
           var cell = document.createElement("div");
           cell.style.cssText = "width:" + CELL + "px;height:" + CELL + "px;border-radius:2px;cursor:pointer";
-          if (secs === 0) cell.style.backgroundColor = "#ebedf0";
-          else if (secs < 1800) cell.style.backgroundColor = "#9be9a8";
-          else if (secs < 3600) cell.style.backgroundColor = "#40c463";
-          else if (secs < 7200) cell.style.backgroundColor = "#30a14e";
-          else cell.style.backgroundColor = "#216e39";
+          if (secs === 0) cell.style.backgroundColor = "#F0EBE0";
+          else if (secs < 1800) cell.style.backgroundColor = "#E8D5B5";
+          else if (secs < 3600) cell.style.backgroundColor = "#D4A574";
+          else if (secs < 7200) cell.style.backgroundColor = "#8B5E3C";
+          else cell.style.backgroundColor = "#C0392B";
           cell.title = iso + ": " + Math.round(secs / 60) + "分钟";
-          cell.addEventListener("click", (function (di, si) {
-            return function () { alert("\ud83d\udcc5 " + di + "\n\u23f1 " + Math.round(si / 60) + "\u5206\u949f"); };
+          cell.addEventListener("mouseenter", (function (di, si) {
+            return function (e) { showHeatmapTip(e, di, si); };
           })(iso, secs));
+          cell.addEventListener("mouseleave", function () { hideHeatmapTip(); });
           grid.appendChild(cell);
         }
       }
@@ -159,6 +160,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     wrapper.appendChild(grid);
     heatEl.appendChild(wrapper);
+  }
+
+  // ── 热力图 Tooltip ──
+  var heatTip = null;
+  function showHeatmapTip(e, dateStr, seconds) {
+    if (!heatTip) {
+      heatTip = document.createElement("div");
+      heatTip.className = "stat-heatmap-tooltip";
+      document.body.appendChild(heatTip);
+    }
+    var mins = Math.round(seconds / 60);
+    heatTip.innerHTML = "<strong>" + dateStr + "</strong><br>" + mins + " 分钟";
+    heatTip.style.display = "block";
+    var x = e.clientX + 10, y = e.clientY - 30;
+    if (x + 120 > window.innerWidth) x = e.clientX - 130;
+    if (y < 10) y = e.clientY + 20;
+    heatTip.style.left = x + "px";
+    heatTip.style.top = y + "px";
+  }
+  function hideHeatmapTip() {
+    if (heatTip) heatTip.style.display = "none";
   }
 
   // ── 阅读目标表单提交 ──

@@ -1538,3 +1538,165 @@ html {
     padding: 0.75rem;
   }
 }
+
+/* ═══════════════════════════════════
+   Stats — Reading Yearbook
+   ═══════════════════════════════════ */
+
+/* ── Stat Card Icons ── */
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  margin-right: 0.4rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.stat-icon-week {
+  background: var(--warm-accent);
+}
+.stat-icon-month {
+  background: var(--leather);
+}
+.stat-icon-year {
+  background: var(--ink);
+}
+.stat-icon-total {
+  background: linear-gradient(135deg, var(--warm-accent), var(--leather));
+}
+
+/* ── Compare Badges ── */
+.stat-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
+.stat-badge-up {
+  background: rgba(45, 125, 70, 0.10);
+  color: var(--success-green);
+  border: 1px solid var(--success-green);
+}
+.stat-badge-down {
+  background: rgba(192, 57, 43, 0.08);
+  color: var(--warm-accent);
+  border: 1px solid var(--warm-accent);
+}
+.stat-badge-tag {
+  display: inline-block;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  background: var(--cream);
+  color: var(--ink-light);
+  border: 1px solid var(--border-warm);
+}
+
+/* ── Card Titles ── */
+.stat-card-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-warm);
+  position: relative;
+}
+.stat-card-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 36px;
+  height: 2px;
+  background: var(--warm-accent);
+  border-radius: 1px;
+}
+
+/* ── Progress Bars ── */
+.stat-progress {
+  height: 8px;
+  background: var(--cream);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+.stat-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.stat-progress-year {
+  background: var(--warm-accent);
+}
+.stat-progress-month {
+  background: var(--tan);
+}
+
+/* ── Ranking Numbers ── */
+.ranking-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-light);
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: var(--cream);
+}
+.list-group-item:first-child .ranking-num,
+.list-group-item:nth-child(2) .ranking-num,
+.list-group-item:nth-child(3) .ranking-num {
+  background: transparent;
+  font-size: 0;
+}
+.list-group-item:first-child .ranking-num::after {
+  content: "🥇";
+  font-size: 1rem;
+}
+.list-group-item:nth-child(2) .ranking-num::after {
+  content: "🥈";
+  font-size: 1rem;
+}
+.list-group-item:nth-child(3) .ranking-num::after {
+  content: "🥉";
+  font-size: 1rem;
+}
+
+/* ── Heatmap Tooltip ── */
+.stat-heatmap-tooltip {
+  position: fixed;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  line-height: 1.4;
+  display: none;
+}
+.stat-heatmap-tooltip strong {
+  font-weight: 600;
+}
+
+/* ── Heatmap Calendar ── */
+.heatmap-container {
+  overflow-x: auto;
+  padding: 4px 0;
+}
