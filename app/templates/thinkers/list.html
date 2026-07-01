@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}思想家{% endblock %}
 {% block content %}
-<div class="section-heading mb-4">
-    <h3>💬 思想家</h3>
-    <p class="text-muted">与古今中外的思想家对话，探索他们的智慧</p>
-</div>
 {% set theme_desc = {
   "先秦哲学": "春秋战国的思想黄金时代，百家争鸣的智慧星河。",
   "古希腊哲学": "雅典城邦的理性之光，西方哲学的永恒源头。",
@@ -13,15 +9,27 @@
   "语言与分析哲学": "语言的界限即世界的界限，以清晰思考对抗含混。",
   "深度心理学": "潜入无意识的深海，探寻灵魂深处的隐秘图景。",
 } %}
+
+<div class="hero-section thinker-hero mb-5">
+    <h1 class="display-6">🏛️ 思想学园</h1>
+    <p>与古今中外的思想家对话，探索他们的智慧世界</p>
+</div>
+
+{% if not thinkers %}
+<div class="text-center py-5">
+    <p class="text-muted">暂无思想家数据</p>
+</div>
+{% endif %}
+
 {% for theme, group in thinkers|groupby('theme') %}
-<div class="mb-5" data-theme="{{ theme }}">
+<div class="mb-5 thinker-theme-section" data-theme="{{ theme }}">
     <h4 class="theme-heading"><span class="theme-dot"></span>{{ theme }}</h4>
     {% if theme in theme_desc %}
     <p class="theme-desc">{{ theme_desc[theme] }}</p>
     {% endif %}
     <div class="row g-4 justify-content-center">
         {% for t in group %}
-        <div class="col-md-4">
+        <div class="col-md-6 col-lg-4">
             <a href="{{ url_for('thinker.chat', slug=t.slug) }}" class="text-decoration-none">
                 <div class="card thinker-card border-0 h-100" data-theme="{{ theme }}">
                     <div class="card-body text-center">

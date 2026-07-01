@@ -1,31 +1,32 @@
 {% extends 'base.html' %}
 {% block title %}与 {{ thinker.name }} 对话{% endblock %}
 {% block content %}
-<div class="row thinker-chat-layout" data-theme="{{ thinker.theme }}">
-    <div class="col-md-3 col-lg-2 d-none d-md-block">
-        <div class="card chat-sidebar h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <small class="text-muted">历史对话</small>
-                <button class="btn btn-sm btn-outline-secondary" onclick="startNewChat()" title="新对话">+</button>
+<div class="row thinker-chat-layout g-0" data-theme="{{ thinker.theme }}">
+    <div class="col-md-3 col-lg-2 thinker-chat-sidebar" id="thinker-sidebar">
+        <div class="thinker-sidebar-inner">
+            <div class="thinker-sidebar-header">
+                <small class="text-muted thinker-sidebar-label">历史对话</small>
+                <button class="thinker-sidebar-new" onclick="startNewChat()" title="新对话">+</button>
             </div>
-            <div class="card-body p-0" id="history-list" style="overflow-y:auto;max-height:70vh;">
+            <div class="thinker-sidebar-list" id="history-list">
                 {% for c in conversations %}
                 <div class="history-item d-flex align-items-center {% if loop.first %}active{% endif %}" data-id="{{ c.id }}">
-                    <div class="flex-grow-1" style="cursor:pointer;min-width:0;" onclick="loadConversation({{ c.id }})">
+                    <div class="thinker-history-content" onclick="loadConversation({{ c.id }})">
                         <div class="history-title text-truncate">{{ c.title }}</div>
                         <div class="history-time">{{ c.updated_at.strftime('%m-%d %H:%M') }}</div>
                     </div>
-                    <button class="btn btn-sm text-muted p-0 ms-1 flex-shrink-0" onclick="event.stopPropagation();deleteConv({{ c.id }})" title="删除对话" style="line-height:1;">&times;</button>
+                    <button class="thinker-delete-btn" onclick="event.stopPropagation();deleteConv({{ c.id }})" title="删除对话">&times;</button>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
-    <div class="col-md-9 col-lg-10">
-        <div class="card d-flex flex-col" style="min-height:70vh;">
+    <div class="col-md-9 col-lg-10 thinker-chat-main">
+        <div class="thinker-chat-card">
             <div class="chat-header">
-                <a href="{{ url_for('thinker.list_thinkers') }}" class="text-decoration-none text-muted me-1">&larr;</a>
-                <div class="rounded-circle avatar-mini d-inline-flex align-items-center justify-content-center flex-shrink-0" style="color:#fff;background:var(--theme-gradient);">{{ thinker.name[0] }}</div>
+                <button class="thinker-sidebar-toggle d-md-none" id="sidebar-toggle" onclick="toggleSidebar()" title="对话列表">☰</button>
+                <a href="{{ url_for('thinker.list_thinkers') }}" class="thinker-back-btn text-decoration-none text-muted me-1">&larr;</a>
+                <div class="rounded-circle avatar-mini d-inline-flex align-items-center justify-content-center flex-shrink-0 thinker-header-avatar">{{ thinker.name[0] }}</div>
                 <div class="flex-grow-1">
                     <div class="thinker-name">{{ thinker.name }}</div>
                     <div class="thinker-sub">{{ thinker.title or thinker.era or '' }}</div>
@@ -34,7 +35,7 @@
                 <span class="theme-badge ms-2">{{ thinker.theme }}</span>
                 {% endif %}
                 <div class="ms-2">
-                    <select class="form-select form-select-sm" style="width:auto;" id="conv-selector" onchange="if(this.value) loadConversation(parseInt(this.value))">
+                    <select class="thinker-conv-selector" id="conv-selector" onchange="if(this.value) loadConversation(parseInt(this.value))">
                         <option value="">切换对话...</option>
                         {% for c in conversations %}
                         <option value="{{ c.id }}">{{ c.title[:30] }}</option>
@@ -42,9 +43,9 @@
                     </select>
                 </div>
             </div>
-            <div class="card-body chat-messages p-0" id="chat-messages">
+            <div class="chat-messages" id="chat-messages">
                 <div class="welcome-msg" id="welcome-msg">
-                    <div class="rounded-circle welcome-avatar d-inline-flex align-items-center justify-content-center" style="color:#fff;background:var(--theme-gradient);">{{ thinker.name[0] }}</div>
+                    <div class="rounded-circle welcome-avatar thinker-welcome-avatar d-inline-flex align-items-center justify-content-center">{{ thinker.name[0] }}</div>
                     <h5>{{ thinker.name }}</h5>
                     {% if thinker.era or thinker.school %}
                     <div class="welcome-tags">
@@ -62,7 +63,7 @@
             <div class="options-container d-none" id="options-container">
                 <div class="d-flex flex-wrap gap-2" id="options-list"></div>
             </div>
-            <div class="card-footer">
+            <div class="card-footer thinker-chat-footer">
                 <form id="chat-form" onsubmit="return sendMessage()">
                     <div class="chat-input-group">
                         <input type="text" id="message-input" placeholder="输入你的想法..." autofocus>
@@ -83,6 +84,10 @@ var csrfToken = '{{ csrf_token() }}';
 function scrollToBottom() {
     var el = document.getElementById('chat-messages');
     el.scrollTop = el.scrollHeight;
+}
+
+function toggleSidebar() {
+    document.getElementById('thinker-sidebar').classList.toggle('show');
 }
 
 function addMessage(role, content) {
@@ -183,6 +188,8 @@ function loadConversation(id) {
             document.querySelectorAll('.history-item').forEach(function(h) { h.classList.remove('active'); });
             var hi = document.querySelector('.history-item[data-id="' + data.id + '"]');
             if (hi) hi.classList.add('active');
+            var sidebar = document.getElementById('thinker-sidebar');
+            if (sidebar) sidebar.classList.remove('show');
         });
 }
 
@@ -207,10 +214,10 @@ function startNewChat() {
         var hi = document.createElement('div');
         hi.className = 'history-item d-flex align-items-center active';
         hi.dataset.id = data.id;
-        hi.innerHTML = '<div class="flex-grow-1" style="cursor:pointer;min-width:0;" onclick="loadConversation(' + data.id + ')">' +
+        hi.innerHTML = '<div class="thinker-history-content" onclick="loadConversation(' + data.id + ')">' +
             '<div class="history-title text-truncate">' + escapeHtml(data.title) + '</div>' +
             '<div class="history-time">' + timeStr + '</div></div>' +
-            '<button class="btn btn-sm text-muted p-0 ms-1 flex-shrink-0" onclick="event.stopPropagation();deleteConv(' + data.id + ')" title="删除对话" style="line-height:1;">&times;</button>';
+            '<button class="thinker-delete-btn" onclick="event.stopPropagation();deleteConv(' + data.id + ')" title="删除对话">&times;</button>';
         var list = document.getElementById('history-list');
         list.insertBefore(hi, list.firstChild);
 
@@ -224,6 +231,8 @@ function startNewChat() {
         document.getElementById('conv-selector').insertBefore(opt, document.getElementById('conv-selector').options[1]);
 
         document.getElementById('message-input').focus();
+        var sidebar = document.getElementById('thinker-sidebar');
+        if (sidebar) sidebar.classList.remove('show');
     });
 }
 
