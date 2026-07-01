@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required
 from app.admin import bp
 from app.admin.captcha import generate_captcha
 from app.forms import LoginForm, BookForm, CategoryForm
-from app.models import Admin, Book, Category, db
+from app.models import User, Book, Category, db
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -13,7 +13,7 @@ def login():
         if form.captcha.data.upper() != session.get('captcha', ''):
             flash('验证码错误', 'danger')
             return render_template('admin/login.html', form=form)
-        admin = Admin.query.filter_by(username=form.username.data).first()
+        admin = User.query.filter_by(username=form.username.data, is_admin=True).first()
         if admin and admin.check_password(form.password.data):
             login_user(admin)
             session.pop('captcha', None)

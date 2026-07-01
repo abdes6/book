@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.models import Admin, Category
+from app.models import User, Category
 
 WEREAD_CATEGORIES = [
     '文学', '精品小说', '历史', '哲学宗教', '心理', '社会文化',
@@ -13,8 +13,8 @@ OLD_CATEGORIES = ['科幻', '技术', '哲学', '传记', '经济', '社会',
 
 
 def init_db():
-    if not Admin.query.first():
-        admin = Admin(username='admin')
+    if not User.query.filter_by(is_admin=True).first():
+        admin = User(username='admin', email='admin@book.com', is_admin=True)
         admin.set_password('admin123')
         db.session.add(admin)
 
