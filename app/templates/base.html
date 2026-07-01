@@ -13,7 +13,7 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">个人藏书</a>
+        <a class="navbar-brand{% if request.endpoint == 'main.index' %} active{% endif %}" href="{{ url_for('main.index') }}">个人藏书</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nb">
             <span class="navbar-toggler-icon"></span>
         </button>
