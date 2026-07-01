@@ -48,6 +48,12 @@ def create_app(config_class=Config):
     from app.notes import bp as notes_bp
     app.register_blueprint(notes_bp, url_prefix='/notes')
 
+    from app.thinker import bp as thinker_bp
+    app.register_blueprint(thinker_bp)
+
+    from app.ai_reader import bp as ai_reader_bp
+    app.register_blueprint(ai_reader_bp, url_prefix='/ai-reader')
+
     @app.template_filter('fmt_seconds')
     def fmt_seconds_filter(seconds):
         if seconds is None:

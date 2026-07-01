@@ -8,3 +8,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
     WEREAD_API_KEY = os.environ.get('WEREAD_API_KEY') or ''
+    DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY') or 'sk-ce2fb30f126b4531a06d04c7734ae354'
+    DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
+    DEEPSEEK_MODEL = 'deepseek-chat'

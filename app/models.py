@@ -182,8 +182,69 @@ class ReadGoal(db.Model):
     user = db.relationship("User", backref=db.backref("read_goals", lazy="dynamic"))
 
 
+class Thinker(db.Model):
+    __tablename__ = "thinker"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=False)
+    title = db.Column(db.String(100))
+    avatar_url = db.Column(db.String(500), default='')
+    era = db.Column(db.String(50))
+    school = db.Column(db.String(100))
+    bio = db.Column(db.Text)
+    system_prompt = db.Column(db.Text, nullable=False)
+    opening_line = db.Column(db.Text, nullable=True)
+    theme = db.Column(db.String(50), default='')
+    sort_order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    conversations = db.relationship("Conversation", backref="thinker", lazy="dynamic",
+                                    cascade="all, delete-orphan")
+
+
+class Conversation(db.Model):
+    __tablename__ = "conversation"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    thinker_id = db.Column(db.Integer, db.ForeignKey("thinker.id"), nullable=False)
+    title = db.Column(db.String(200), default="新对话")
+    messages = db.Column(db.JSON, nullable=False, default=list)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
+                           onupdate=datetime.utcnow)
+
+    user = db.relationship("User", backref=db.backref("conversations", lazy="dynamic"))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     if user_id.startswith('u_'):
         return User.query.get(int(user_id[2:]))
     return Admin.query.get(int(user_id))
+
+
+class BookChat(db.Model):
+    __tablename__ = 'book_chat'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    title = db.Column(db.String(200), default='关于本书的对话')
+    messages = db.Column(db.JSON, nullable=False, default=list)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user = db.relationship('User', backref=db.backref('book_chats', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('book_chats', lazy='dynamic'))
+
+
+class BookAIContent(db.Model):
+    __tablename__ = 'book_ai_content'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    content_type = db.Column(db.String(20), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    source_info = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint('user_id', 'book_id', 'content_type'),)
+    user = db.relationship('User', backref=db.backref('ai_contents', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('ai_contents', lazy='dynamic'))

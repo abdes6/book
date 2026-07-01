@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}思想家{% endblock %}
+{% block content %}
+<div class="section-heading mb-4">
+    <h3>💬 思想家</h3>
+    <p class="text-muted">与古今中外的思想家对话，探索他们的智慧</p>
+</div>
+{% set theme_desc = {
+  "先秦哲学": "春秋战国的思想黄金时代，百家争鸣的智慧星河。",
+  "古希腊哲学": "雅典城邦的理性之光，西方哲学的永恒源头。",
+  "德国古典哲学": "德国观念论的巅峰时代，体系化哲学的宏伟建构。",
+  "存在主义": "在荒谬中直面存在，在自由中承担选择的重负。",
+  "语言与分析哲学": "语言的界限即世界的界限，以清晰思考对抗含混。",
+  "深度心理学": "潜入无意识的深海，探寻灵魂深处的隐秘图景。",
+} %}
+{% for theme, group in thinkers|groupby('theme') %}
+<div class="mb-5" data-theme="{{ theme }}">
+    <h4 class="theme-heading"><span class="theme-dot"></span>{{ theme }}</h4>
+    {% if theme in theme_desc %}
+    <p class="theme-desc">{{ theme_desc[theme] }}</p>
+    {% endif %}
+    <div class="row g-4 justify-content-center">
+        {% for t in group %}
+        <div class="col-md-4">
+            <a href="{{ url_for('thinker.chat', slug=t.slug) }}" class="text-decoration-none">
+                <div class="card thinker-card border-0 h-100" data-theme="{{ theme }}">
+                    <div class="card-body text-center">
+                        <div class="thinker-initial">{{ t.name[0] }}</div>
+                        <h5 class="thinker-card-name">{{ t.name }}</h5>
+                        <div class="thinker-meta">
+                            {% if t.era %}<span class="meta-tag">{{ t.era }}</span>{% endif %}
+                            {% if t.school %}<span class="meta-tag">{{ t.school }}</span>{% endif %}
+                        </div>
+                        {% if t.bio %}
+                        <p class="thinker-bio">{{ t.bio[:60] }}{% if t.bio|length > 60 %}…{% endif %}</p>
+                        {% endif %}
+                        <div class="thinker-cta">开始对话 →</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

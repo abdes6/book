@@ -16,4 +16,5 @@ start.ps1
 .idea/
 *.doc
 app.py
-skills/
+skills/*
+!skills/frontend-design/

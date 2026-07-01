@@ -402,6 +402,75 @@ footer {
   }
 }
 
+/* ── Theme headings ── */
+.theme-heading {
+    font-size: 1.4rem;
+    color: var(--ink);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-warm);
+    position: relative;
+}
+.theme-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 48px;
+    height: 2px;
+    background: var(--warm-accent);
+}
+
+/* ── Thinker cards ── */
+.thinker-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--tan);
+}
+.thinker-card .card-title {
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ── Chat bubbles ── */
+.chat-bubble-user {
+    background: var(--warm-accent);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    border-radius: 16px 16px 4px 16px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+.chat-bubble-thinker {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0.6rem 1rem;
+    border-radius: 16px 16px 16px 4px;
+    max-width: 70%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+}
+.chat-bubble-thinker small {
+    color: var(--leather);
+    font-family: 'Playfair Display', Georgia, serif;
+}
+.history-item {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.history-item:hover {
+    background: var(--cream);
+}
+.history-item.active {
+    background: var(--cream);
+    border-left: 3px solid var(--warm-accent);
+}
+
+.thinker-chat-layout {
+    min-height: 75vh;
+}
+
 /* ── Smooth scroll ── */
 html {
   scroll-behavior: smooth;
@@ -413,4 +482,419 @@ html {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ═══════════════════════════════════
+   Thinker Theme Color System
+   ═══════════════════════════════════ */
+[data-theme="先秦哲学"] { --theme-accent: #5B7B6A; --theme-light: rgba(91,123,106,0.10); --theme-gradient: linear-gradient(135deg, #5B7B6A, #7B9C8A); }
+[data-theme="古希腊哲学"] { --theme-accent: #4A7C8C; --theme-light: rgba(74,124,140,0.10); --theme-gradient: linear-gradient(135deg, #4A7C8C, #6A9CAC); }
+[data-theme="德国古典哲学"] { --theme-accent: #3D5A80; --theme-light: rgba(61,90,128,0.10); --theme-gradient: linear-gradient(135deg, #3D5A80, #5D7AA0); }
+[data-theme="存在主义"] { --theme-accent: #8B5E3C; --theme-light: rgba(139,94,60,0.10); --theme-gradient: linear-gradient(135deg, #8B5E3C, #AB7E5C); }
+[data-theme="语言与分析哲学"] { --theme-accent: #6B5B7B; --theme-light: rgba(107,91,123,0.10); --theme-gradient: linear-gradient(135deg, #6B5B7B, #8B7B9B); }
+[data-theme="深度心理学"] { --theme-accent: #A67B3C; --theme-light: rgba(166,123,60,0.10); --theme-gradient: linear-gradient(135deg, #A67B3C, #C69B5C); }
+
+/* ── Theme section in list page ── */
+.theme-heading {
+    font-size: 1.4rem;
+    color: var(--ink);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-warm);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.theme-heading .theme-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--theme-accent, var(--warm-accent));
+    flex-shrink: 0;
+}
+.theme-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 48px;
+    height: 2px;
+    background: var(--theme-accent, var(--warm-accent));
+}
+.theme-desc {
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    font-style: italic;
+    padding-left: 1.2rem;
+    margin-top: -0.25rem;
+    margin-bottom: 1.25rem;
+    border-left: 2px solid var(--border-warm);
+}
+
+/* ── Thinker card ── */
+.thinker-card {
+    position: relative;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.thinker-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+.thinker-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    color: #fff;
+    background: var(--theme-gradient);
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.thinker-card:hover .thinker-initial {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.thinker-card .card-body {
+    padding: 0.75rem 1rem 1.25rem;
+}
+.thinker-card-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+}
+.thinker-meta {
+    display: flex;
+    gap: 0.35rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 0.4rem;
+}
+.meta-tag {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 20px;
+    background: var(--theme-light, #f0ebe4);
+    color: var(--ink-light);
+    white-space: nowrap;
+}
+.thinker-bio {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    line-height: 1.45;
+    margin-bottom: 0.5rem;
+}
+.thinker-cta {
+    font-size: 0.8rem;
+    color: var(--theme-accent, var(--warm-accent));
+    font-weight: 500;
+    opacity: 0.6;
+    transform: translateY(2px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.thinker-card:hover .thinker-cta {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Chat page header ── */
+.chat-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border-light);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius) var(--radius) 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.chat-header .avatar-mini {
+    width: 40px; height: 40px;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    background: var(--theme-gradient) !important;
+    flex-shrink: 0;
+}
+.chat-header .thinker-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink);
+    line-height: 1.2;
+}
+.chat-header .thinker-sub {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    line-height: 1.2;
+}
+.chat-header .theme-badge {
+    background: var(--theme-light);
+    color: var(--theme-accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    border: 1px solid var(--theme-accent);
+    white-space: nowrap;
+}
+
+/* ── Chat bubbles ── */
+.chat-messages {
+    flex: 1;
+    background: var(--cream);
+    padding: 1rem 1.25rem;
+    overflow-y: auto;
+}
+.chat-bubble-thinker {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0.75rem 1rem;
+    border-radius: 4px 16px 16px 16px;
+    max-width: 75%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+.chat-bubble-thinker .bubble-author {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--theme-accent, var(--leather));
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.chat-bubble-thinker::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--theme-accent, var(--leather));
+    border-radius: 3px 0 0 3px;
+}
+.chat-bubble-user {
+    background: var(--theme-accent, var(--warm-accent));
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 16px 4px 16px 16px;
+    max-width: 75%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ── Message animation ── */
+@keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.thinker-bubble-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    color: #fff;
+    background: var(--theme-gradient);
+    margin-right: 0.6rem;
+    margin-top: 0.25rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.msg-animate {
+    animation: msgIn 0.3s ease forwards;
+}
+
+/* ── Options pills ── */
+.options-container {
+    background: var(--cream);
+    padding: 0.5rem 1.25rem 0.75rem;
+    border-top: 1px solid var(--border-light);
+}
+.option-pill {
+    background: var(--paper);
+    border: 1px solid var(--border-warm);
+    color: var(--ink-light);
+    border-radius: 20px;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.option-pill:hover {
+    background: var(--theme-light);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ── Chat input group ── */
+.chat-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--paper);
+    border: 1px solid var(--border-warm);
+    border-radius: 24px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+.chat-input-group:focus-within {
+    border-color: var(--theme-accent, var(--warm-accent));
+    box-shadow: 0 0 0 3px var(--theme-light);
+}
+.chat-input-group input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.6rem 1rem;
+    font-size: 0.92rem;
+    color: var(--ink);
+    outline: none;
+}
+.chat-input-group input::placeholder {
+    color: var(--ink-light);
+    opacity: 0.6;
+}
+.chat-input-group .btn-send {
+    background: transparent;
+    border: none;
+    color: var(--theme-accent, var(--warm-accent));
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    border-left: 1px solid var(--border-light);
+    white-space: nowrap;
+}
+.chat-input-group .btn-send:hover {
+    background: var(--theme-light);
+    color: var(--theme-accent);
+}
+
+/* ── Typing indicator ── */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--border-light);
+    border-radius: 16px 16px 16px 4px;
+    max-width: fit-content;
+    box-shadow: var(--shadow-sm);
+}
+.typing-indicator span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--ink-light);
+    animation: typingDot 1.4s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot {
+    0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+    30% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Welcome state ── */
+.welcome-msg {
+    text-align: center;
+    padding: 3rem 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+.welcome-msg .welcome-avatar {
+    width: 80px; height: 80px;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+    background: var(--theme-gradient) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+}
+.welcome-msg h5 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    font-size: 1.2rem;
+}
+.welcome-tags {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+.welcome-tags .tag {
+    font-size: 0.75rem;
+    color: var(--theme-accent);
+    background: var(--theme-light);
+    border: 1px solid var(--theme-accent);
+    padding: 0.15rem 0.55rem;
+    border-radius: 10px;
+    font-weight: 500;
+}
+.welcome-divider {
+    width: 48px;
+    height: 2px;
+    background: var(--border-warm);
+    margin: 0.75rem auto;
+    border-radius: 1px;
+}
+.welcome-quote {
+    color: var(--ink-light);
+    font-size: 0.88rem;
+    font-style: italic;
+    line-height: 1.6;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+}
+.welcome-msg .welcome-hint {
+    color: var(--ink-light);
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+/* ── Chat sidebar ── */
+.chat-sidebar {
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.history-item {
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    padding: 0.6rem 0.75rem !important;
+}
+.history-item:hover {
+    background: var(--cream);
+}
+.history-item.active {
+    background: var(--cream);
+    border-left-color: var(--theme-accent, var(--warm-accent));
+}
+.history-item .history-title {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+.history-item .history-time {
+    font-size: 0.7rem;
+    color: var(--ink-light);
 }
