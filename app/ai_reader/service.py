@@ -25,7 +25,8 @@ PROMPTS = {
                 '1. 核心观点提炼（3-5个）\n2. 金句精选\n3. 观点之间的逻辑关系\n\n'
                 '划线笔记：\n{highlights}',
     'recommend': '我正在阅读《{title}》(作者: {author})，请推荐5本类似的书籍。\n'
-                 '每本推荐包括：书名、作者、推荐理由、与当前书的关联。\n\n'
+                 '只输出推荐结果，每行一条，格式：书名 - 作者 - 推荐理由。\n'
+                 '不要添加任何说明文字、序号或多余格式。\n\n'
                  '我读过的其他书：\n{read_history}',
     'opening': '你是一位专业的读书助手。请为《{title}》(作者: {author})写一段简短温暖的欢迎语（50-80字），'
                '作为与读者对话的开场白。以第一人称口吻，仿佛你就是这本书的化身或向导。\n\n'
@@ -114,8 +115,12 @@ def generate_recommendations(book, read_history_text):
     recommendations = []
     for line in text.strip().split('\n'):
         line = line.strip()
-        if line and not line.startswith('#') and not line.startswith('**'):
-            recommendations.append(line)
+        if not line:
+            continue
+        cleaned = re.sub(r'^[\d]+[\.\)、\s]*|^[-*·]\s*', '', line).strip()
+        if not cleaned or len(cleaned) < 10:
+            continue
+        recommendations.append(cleaned)
     return recommendations
 
 

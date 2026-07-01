@@ -20,7 +20,9 @@ def book_list():
         sync_shelf_for_user(current_user.id)
     except Exception:
         current_app.logger.warning('书架同步失败，显示缓存数据', exc_info=True)
-    books = Book.query.filter_by(user_id=current_user.id).order_by(Book.created_at.desc()).all()
+    books = Book.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Book.created_at.desc()).all()
     return jsonify([{
         'id': b.id, 'title': b.title, 'author': b.author or '',
         'cover_url': b.cover_url or '', 'status': b.status or 'reading',

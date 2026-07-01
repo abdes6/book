@@ -82,7 +82,7 @@
     var el = document.getElementById('book-list');
     books.forEach(function(b, index){
       var a = document.createElement('a');
-      a.className = 'ai-reader-book-item' + (index >= 10 ? ' d-none' : '');
+      a.className = 'ai-reader-book-item';
       a.href = '#';
       a.dataset.id = b.id;
       a.dataset.title = b.title;
@@ -113,7 +113,6 @@
     document.querySelectorAll('#book-list .ai-reader-book-item').forEach(function(item){
       var match = item.textContent.toLowerCase().includes(q);
       item.style.display = match ? '' : 'none';
-      if (!match) item.classList.remove('show');
     });
   });
 
