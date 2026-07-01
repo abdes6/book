@@ -12,8 +12,8 @@
 
 <div class="row g-3 mb-4">
     {% for data, label in [(weekly,'本周'), (monthly,'本月'), (annually,'今年'), (overall,'总计')] %}
-    <div class="col-md-3 col-6{% if label == '总计' %} d-flex{% endif %}">
-        <div class="stat-card{% if label == '总计' %} h-100{% endif %}">
+    <div class="col-md-3 col-6 d-flex">
+        <div class="stat-card h-100">
             {% set icon_labels = {'本周':'周','本月':'月','今年':'年','总计':'总'} %}
             <div class="stat-label"><span class="stat-icon stat-icon-{{ {'本周':'week','本月':'month','今年':'year','总计':'total'}[label] }}">{{ icon_labels.get(label, '') }}</span> {{ label }}</div>
             <div class="stat-value">
