@@ -19,10 +19,10 @@
         </button>
         <div class="collapse navbar-collapse" id="nb">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('main.book_list') }}">全部藏书</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('main.stats') }}">阅读统计</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('thinker.list_thinkers') }}">💬 思想家</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('ai_reader.index') }}">🤖 AI 读书</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('main.book_') %} active{% endif %}" href="{{ url_for('main.book_list') }}">全部藏书</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint == 'main.stats' %} active{% endif %}" href="{{ url_for('main.stats') }}">阅读统计</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('thinker.') %} active{% endif %}" href="{{ url_for('thinker.list_thinkers') }}">💬 思想家</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('ai_reader.') %} active{% endif %}" href="{{ url_for('ai_reader.index') }}">🤖 AI 读书</a></li>
             </ul>
             <ul class="navbar-nav">
                 {% if current_user.is_authenticated %}
