@@ -4,6 +4,7 @@ from app.ai_reader import bp
 from app.ai_reader.service import chat_with_book, generate_summary, generate_review, generate_analysis, generate_recommendations, generate_opening, _generate_options
 from app.extensions import db, frontend_login_required, csrf
 from app.models import Book, BookChat, BookAIContent, Highlight
+from app.weread.importer import sync_shelf_for_user
 
 
 @bp.route('/')
@@ -16,7 +17,11 @@ def index():
 @frontend_login_required
 def book_list():
     user_id = int(current_user.get_id().replace('u_', ''))
-    books = Book.query.filter_by(user_id=user_id).order_by(Book.updated_at.desc()).all()
+    try:
+        sync_shelf_for_user(user_id)
+    except Exception:
+        current_app.logger.warning('书架同步失败，显示缓存数据', exc_info=True)
+    books = Book.query.filter_by(user_id=user_id).order_by(Book.created_at.desc()).all()
     return jsonify([{
         'id': b.id, 'title': b.title, 'author': b.author or '',
         'cover_url': b.cover_url or '', 'status': b.status or 'reading',
