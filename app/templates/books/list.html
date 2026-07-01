@@ -36,6 +36,9 @@
                         <h6 class="text-truncate">{{ book.title }}</h6>
                         <p class="small text-muted text-truncate">{{ book.author or '' }}</p>
                         <span class="badge bg-{{ 'info' if book.status=='reading' else 'success' }}">{{ {'reading':'在读','done':'读完'}[book.status] }}</span>
+                        {% if book.last_read_at %}
+                        <p class="text-muted mb-0 mt-1" style="font-size:0.7rem;">最近：{{ book.last_read_at.strftime('%m-%d') }}</p>
+                        {% endif %}
                     </div>
                     <a href="{{ url_for('main.book_detail', id=book.id) }}" class="stretched-link"></a>
                 </div>

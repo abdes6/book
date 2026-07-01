@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}划线搜索{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h3 class="mb-3">搜索划线笔记</h3>
+        <form class="mb-4" method="get" action="{{ url_for('main.highlight_search') }}">
+            <div class="input-group input-group-lg">
+                <input type="text" name="q" class="form-control" placeholder="输入关键词，跨所有书籍搜索划线..."
+                       value="{{ q or '' }}" autofocus minlength="2">
+                <button class="btn" type="submit" style="background-color:var(--leather);color:#fff;">搜索</button>
+            </div>
+        </form>
+
+        {% if q is not defined or q == '' or q|length < 2 %}
+            <div class="text-center py-5 text-muted">
+                <p class="fs-5">输入至少 2 个字符开始搜索</p>
+            </div>
+        {% elif pagination and pagination.items %}
+            <p class="text-muted small mb-3">找到 {{ pagination.total }} 条划线，关键词: <mark>{{ q }}</mark></p>
+            {% for item in pagination.items %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <p class="mb-2 highlight-text-search">{{ item.mark_text }}</p>
+                    <p class="mb-1 small">
+                        <span class="text-muted">{{ item.chapter_title or '未分类章节' }}</span>
+                        &mdash;
+                        <a href="{{ url_for('main.book_detail', id=item.book_id) }}">{{ item.book_title }}</a>
+                        <span class="text-muted">/ {{ item.book_author or '未知作者' }}</span>
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+            {% if pagination.pages > 1 %}
+            <nav class="mt-3">
+                <ul class="pagination">
+                    {% for p in pagination.iter_pages() %}
+                    {% if p %}
+                    <li class="page-item {{ 'active' if p == pagination.page }}">
+                        <a class="page-link" href="{{ url_for('main.highlight_search', q=q, page=p) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% elif q and q|length >= 2 %}
+            <div class="text-center py-5 text-muted">
+                <p class="fs-5">未找到与 "<mark>{{ q }}</mark>" 相关的划线</p>
+                <p>试试其他关键词</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var els = document.querySelectorAll('.highlight-text-search');
+    var q = {{ q|tojson|safe }};
+    if (q && q.length >= 2) {
+        var re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        els.forEach(function(el) {
+            el.innerHTML = el.textContent.replace(re, '<mark>$1</mark>');
+        });
+    }
+})();
+</script>
+{% endblock %}

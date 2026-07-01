@@ -75,11 +75,18 @@ def sync_all_stats(user_id, ttl_seconds=300):
         if m <= 0:
             m += 12
             y -= 1
-        ts = int(datetime(y, m, 1).timestamp())
+        ps = datetime(y, m, 1)
+        existing = ReadStat.query.filter_by(
+            user_id=user_id, mode="monthly", period_start=ps
+        ).first()
+        # 历史月份不重复拉取，仅更新当前月
+        if existing and (y != now.year or m != now.month):
+            continue
+        ts = int(ps.timestamp())
         monthly_data = get_readdata("monthly", base_time=ts)
         if monthly_data:
             _save_read_stat(user_id, "monthly", monthly_data,
-                            period_start=datetime(y, m, 1))
+                            period_start=ps)
             if monthly_data.get("readTimes"):
                 _save_daily_from_readTimes(user_id, monthly_data["readTimes"])
 

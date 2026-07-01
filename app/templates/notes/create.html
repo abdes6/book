@@ -4,8 +4,15 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
         <h4 class="mb-3">为《{{ book.title }}》写笔记</h4>
+        {% if highlight %}
+        <div class="alert alert-light border mb-3">
+            <strong>引用划线：</strong><br>{{ highlight.mark_text }}
+            <span class="text-muted small d-block mt-1">{{ highlight.chapter_title or '' }}</span>
+        </div>
+        {% endif %}
         <form method="post">
             {{ form.hidden_tag() }}
+            {% if highlight %}<input type="hidden" name="highlight_id" value="{{ highlight.id }}">{% endif %}
             <div class="mb-3">
                 {{ form.title.label(class='form-label') }}
                 {{ form.title(class='form-control', placeholder='给这篇笔记起个标题') }}

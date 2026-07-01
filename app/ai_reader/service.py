@@ -1,13 +1,6 @@
 import re
 from flask import current_app
-from openai import OpenAI
-
-
-def _client():
-    return OpenAI(
-        api_key=current_app.config['DEEPSEEK_API_KEY'],
-        base_url=current_app.config['DEEPSEEK_BASE_URL']
-    )
+from app.ai_utils import get_client, parse_reply, generate_options, FORMAT_RULE
 
 
 PROMPTS = {
@@ -37,28 +30,8 @@ TEMPS = {'chat': 0.7, 'summary': 0.3, 'review': 0.5, 'analysis': 0.4, 'recommend
 MAX_TOKENS = {'chat': 2048, 'summary': 1024, 'review': 1536, 'analysis': 2048, 'recommend': 1024, 'opening': 512}
 
 
-FORMAT_RULE = '\n回复末尾必须写 ===OPTIONS===\n换行后每行一个选项（共3个），简洁不超过10字\n'
-
-def _parse_reply(raw):
-    if '===OPTIONS===' in raw:
-        parts = raw.split('===OPTIONS===', 1)
-        reply = parts[0].strip()
-        options = [re.sub(r'^\d+[\.\)、]\s*', '', o).strip() for o in parts[1].strip().split('\n') if o.strip()]
-        return reply, [o for o in options if o][:3]
-    return raw, []
-
-def _generate_options(reply):
-    client = _client()
-    resp = client.chat.completions.create(
-        model=current_app.config['DEEPSEEK_MODEL'],
-        messages=[{'role': 'system', 'content': '为下面的回复生成3个简短的自然对话选项，每行一个，不要序号和前缀。'}, {'role': 'user', 'content': reply}],
-        temperature=0.5, max_tokens=200
-    )
-    text = resp.choices[0].message.content
-    return [re.sub(r'^\d+[\.\)、]\s*', '', o).strip() for o in text.split('\n') if o.strip()][:3]
-
 def _call_ai(prompt, temp=0.7, max_tokens=2048):
-    resp = _client().chat.completions.create(
+    resp = get_client().chat.completions.create(
         model=current_app.config['DEEPSEEK_MODEL'],
         messages=[{'role': 'user', 'content': prompt}],
         temperature=temp, max_tokens=max_tokens
@@ -83,14 +56,14 @@ def chat_with_book(book, highlights_text, message, history):
     for h in history:
         messages.append(h)
     messages.append({'role': 'user', 'content': message})
-    resp = _client().chat.completions.create(
+    resp = get_client().chat.completions.create(
         model=current_app.config['DEEPSEEK_MODEL'],
         messages=messages, temperature=TEMPS['chat'], max_tokens=MAX_TOKENS['chat']
     )
     raw = resp.choices[0].message.content
-    reply, options = _parse_reply(raw)
+    reply, options = parse_reply(raw)
     if not options:
-        options = _generate_options(reply)
+        options = generate_options(reply)
     return reply, options
 
 
@@ -127,7 +100,7 @@ def generate_recommendations(book, read_history_text):
 def generate_opening(book):
     ctx = {'title': book.title or '', 'author': book.author or '未知', 'summary': book.summary or '暂无简介', 'FMT': FORMAT_RULE}
     raw = _call_ai(PROMPTS['opening'].format(**ctx), TEMPS['opening'], MAX_TOKENS['opening'])
-    reply, options = _parse_reply(raw)
+    reply, options = parse_reply(raw)
     if not options:
-        options = _generate_options(reply)
+        options = generate_options(reply)
     return reply, options

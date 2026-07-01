@@ -172,7 +172,7 @@
       if(data.messages){
         var el = document.getElementById('chat-messages');
         data.messages.forEach(function(m){
-          addChatBubble(m.role, m.content);
+          addChatBubble(m.role, m.content_html || m.content);
         });
         if(data.options) addOptions(data.options);
       }
@@ -188,7 +188,7 @@
       if(data.error){
         contentEl.innerHTML = '<div class="alert alert-warning">' + escapeHtml(data.error) + '</div>';
       } else {
-        var html = data.content ? '<div class="ai-reader-content-body">' + escapeHtml(data.content).replace(/\n/g, '<br>') + '</div>' : '';
+        var html = data.content_html ? '<div class="ai-reader-content-body">' + data.content_html + '</div>' : '';
         if(data.recommendations){
           html = '<div class="ai-reader-rec-list">' + data.recommendations.map(function(r, i){
             return '<div class="ai-reader-rec-item">' + escapeHtml(r) + '</div>';
@@ -227,7 +227,7 @@
       if(data.error){
         addChatBubble('assistant', '⚠️ ' + data.error);
       } else {
-        addChatBubble('assistant', data.reply);
+        addChatBubble('assistant', data.reply_html || data.reply);
         if(data.options) addOptions(data.options);
       }
     }).catch(function(){
@@ -242,8 +242,7 @@
     div.className = 'mb-3 msg-animate d-flex' + (role === 'user' ? ' justify-content-end' : ' align-items-start');
     if(role !== 'user'){
       div.innerHTML = '<div class="chat-bubble-thinker">' +
-        '<span class="bubble-author">AI 读书助手</span>' +
-        escapeHtml(text).replace(/\n/g, '<br>') + '</div>';
+        '<span class="bubble-author">AI 读书助手</span>' + text + '</div>';
     } else {
       div.innerHTML = '<div class="chat-bubble-user">' + escapeHtml(text).replace(/\n/g, '<br>') + '</div>';
     }

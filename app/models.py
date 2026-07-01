@@ -27,16 +27,20 @@ class Book(db.Model):
     cover_url = db.Column(db.String(500))
     summary = db.Column(db.Text)
     rating = db.Column(db.Numeric(2, 1), default=0.0)
-    status = db.Column(db.String(10), default='reading')
+    status = db.Column(db.String(10), default='reading', index=True)
+    progress = db.Column(db.Integer, default=0)
+    last_read_at = db.Column(db.DateTime, nullable=True)
     notes = db.Column(db.Text)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), index=True)
     imported = db.Column(db.Boolean, default=False)
-    weread_book_id = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    shelved = db.Column(db.Boolean, default=True, index=True)
+    weread_book_id = db.Column(db.String(50), index=True)
+    created_at = db.Column(db.DateTime, default=datetime.now, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     last_viewed_at = db.Column(db.DateTime, nullable=True)
     owner = db.relationship('User', backref=db.backref('books', lazy='dynamic'))
     highlights = db.relationship('Highlight', backref='book', lazy='dynamic',
+                                 cascade='all, delete-orphan',
                                  order_by='Highlight.chapter_uid, Highlight.created_at')
 
     def __repr__(self):
@@ -48,7 +52,7 @@ class Highlight(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False, index=True)
     weread_bookmark_id = db.Column(db.String(100), nullable=False)
     chapter_uid = db.Column(db.Integer, default=0)
     chapter_title = db.Column(db.String(200), default='')
@@ -79,13 +83,18 @@ class User(UserMixin, db.Model):
     def get_id(self):
         return f'u_{self.id}'
 
+    @property
+    def safe_id(self):
+        return self.id
+
 
 class Note(db.Model):
     __tablename__ = 'notes'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False, index=True)
+    highlight_id = db.Column(db.Integer, db.ForeignKey('highlights.id'), nullable=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.now)
@@ -93,7 +102,9 @@ class Note(db.Model):
 
     author = db.relationship('User', backref=db.backref('notes', lazy='dynamic'))
     book = db.relationship('Book', backref=db.backref('user_notes', lazy='dynamic',
+                                                      cascade='all, delete-orphan',
                                                       order_by='Note.updated_at.desc()'))
+    highlight = db.relationship('Highlight', backref=db.backref('notes', lazy='dynamic'))
 
 
 class NoteImage(db.Model):
@@ -107,6 +118,7 @@ class NoteImage(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.now)
 
     note_ref = db.relationship('Note', backref=db.backref('images', lazy='dynamic',
+                                cascade='all, delete-orphan',
                                 order_by='NoteImage.uploaded_at'))
 
 
@@ -190,7 +202,7 @@ class Thinker(db.Model):
 class Conversation(db.Model):
     __tablename__ = "conversation"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     thinker_id = db.Column(db.Integer, db.ForeignKey("thinker.id"), nullable=False)
     title = db.Column(db.String(200), default="新对话")
     messages = db.Column(db.JSON, nullable=False, default=list)
@@ -210,14 +222,15 @@ def load_user(user_id):
 class BookChat(db.Model):
     __tablename__ = 'book_chat'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False, index=True)
     title = db.Column(db.String(200), default='关于本书的对话')
     messages = db.Column(db.JSON, nullable=False, default=list)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('book_chats', lazy='dynamic'))
-    book = db.relationship('Book', backref=db.backref('book_chats', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('book_chats', lazy='dynamic',
+                                                      cascade='all, delete-orphan'))
 
 
 class BookAIContent(db.Model):
@@ -231,4 +244,5 @@ class BookAIContent(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint('user_id', 'book_id', 'content_type'),)
     user = db.relationship('User', backref=db.backref('ai_contents', lazy='dynamic'))
-    book = db.relationship('Book', backref=db.backref('ai_contents', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('ai_contents', lazy='dynamic',
+                                                      cascade='all, delete-orphan'))

@@ -1,9 +1,8 @@
 from datetime import datetime, date, timedelta
-from flask import render_template, jsonify, redirect, url_for, request as flask_request
-from flask import current_app
+from flask import render_template, jsonify, redirect, url_for, request, current_app
 from flask_login import current_user
 from app.main import bp
-from app.extensions import frontend_login_required, csrf
+from app.extensions import frontend_login_required
 from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, ReadGoal, db
 from app.weread.api import get_shelf
 from app.weread.importer import import_highlights_for_book
@@ -19,15 +18,22 @@ def index():
         data = get_shelf()
         if data and 'books' in data:
             sorted_books = sorted(data.get('books', []), key=lambda b: b.get('readUpdateTime', 0) or 0, reverse=True)
-            for b in sorted_books[:10]:
-                local = Book.query.filter_by(weread_book_id=str(b.get('bookId', '')), user_id=current_user.id).first()
+            top_10 = sorted_books[:10]
+            weread_ids = [str(b.get('bookId', '')) for b in top_10]
+            local_books = Book.query.filter(
+                Book.weread_book_id.in_(weread_ids),
+                Book.user_id == current_user.id
+            ).all()
+            local_map = {b.weread_book_id: b.id for b in local_books}
+            for b in top_10:
+                bid = str(b.get('bookId', ''))
                 weread_books.append({
                     'title': b.get('title', ''),
                     'author': b.get('author', ''),
                     'cover': b.get('cover', ''),
-                    'book_id': b.get('bookId', ''),
+                    'book_id': bid,
                     'finished': b.get('finishReading', 0),
-                    'local_id': local.id if local else None,
+                    'local_id': local_map.get(bid),
                 })
     except Exception:
         weread_books = None
@@ -37,7 +43,7 @@ def index():
 @bp.route('/stats')
 @frontend_login_required
 def stats():
-    user_id = int(current_user.get_id().replace('u_', ''))
+    user_id = current_user.safe_id
     sync_all_stats(user_id)
 
     def _find_stat(mode, period_start=None):
@@ -76,11 +82,17 @@ def stats():
             overall['dayAverageReadTime'] = overall['totalReadTime'] // overall['readDays']
 
     today = date.today()
+    start_30 = today - timedelta(days=29)
+    daily_rows = DailyReadStat.query.filter(
+        DailyReadStat.user_id == user_id,
+        DailyReadStat.date >= start_30,
+        DailyReadStat.date <= today
+    ).all()
+    daily_map = {r.date: r.total_read_time for r in daily_rows}
     days_30 = []
     for i in range(29, -1, -1):
         d = today - timedelta(days=i)
-        r = DailyReadStat.query.filter_by(user_id=user_id, date=d).first()
-        seconds = r.total_read_time if r else 0
+        seconds = daily_map.get(d, 0)
         days_30.append({'date': d.isoformat(), 'minutes': round(seconds / 60, 1)})
 
     year_days = {}
@@ -91,17 +103,21 @@ def stats():
     for r in year_rows:
         year_days[r.date.isoformat()] = r.total_read_time
 
-    months_12 = []
+    months_periods = []
     for i in range(11, -1, -1):
         m = datetime.utcnow().month - i
         y = datetime.utcnow().year
         if m <= 0:
             m += 12
             y -= 1
-        ps = datetime(y, m, 1)
-        r = _find_stat('monthly', period_start=ps)
-        seconds = r.total_read_time if r else 0
-        months_12.append({'month': f'{y}-{m:02d}', 'minutes': round(seconds / 60, 1)})
+        months_periods.append((y, m, datetime(y, m, 1)))
+    monthly_stats = ReadStat.query.filter(
+        ReadStat.user_id == user_id,
+        ReadStat.mode == 'monthly',
+        ReadStat.period_start.in_([p[2] for p in months_periods])
+    ).all()
+    monthly_map = {r.period_start: r.total_read_time for r in monthly_stats}
+    months_12 = [{'month': f'{y}-{m:02d}', 'minutes': round(monthly_map.get(ps, 0) / 60, 1)} for y, m, ps in months_periods]
 
     categories = []
     if overall and overall.get('preferCategory'):
@@ -188,13 +204,12 @@ def stats():
 
 
 @bp.route('/stats/goal/edit', methods=['POST'])
-@csrf.exempt
 @frontend_login_required
 def edit_goal():
-    user_id = int(current_user.get_id().replace('u_', ''))
-    year = flask_request.form.get('year', type=int, default=datetime.utcnow().year)
-    month = flask_request.form.get('month', type=int)
-    target = flask_request.form.get('target_read_time', type=int, default=0)
+    user_id = current_user.safe_id
+    year = request.form.get('year', type=int, default=datetime.utcnow().year)
+    month = request.form.get('month', type=int)
+    target = request.form.get('target_read_time', type=int, default=0)
     goal = ReadGoal.query.filter_by(user_id=user_id, year=year, month=month).first()
     if goal:
         goal.target_read_time = target
@@ -213,8 +228,7 @@ def daily_detail(date_str):
         d = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         return jsonify({'error': 'invalid date'}), 400
-    user_id = int(current_user.get_id().replace('u_', ''))
-    r = DailyReadStat.query.filter_by(user_id=user_id, date=d).first()
+    r = DailyReadStat.query.filter_by(user_id=current_user.safe_id, date=d).first()
     return jsonify({
         'date': date_str,
         'total_read_time': r.total_read_time if r else 0,
@@ -222,7 +236,6 @@ def daily_detail(date_str):
 @bp.route('/books')
 @frontend_login_required
 def book_list():
-    from flask import request
     from app.weread.importer import sync_shelf_for_user
     try:
         sync_shelf_for_user(current_user.id)
@@ -233,7 +246,7 @@ def book_list():
     sf = request.args.get('status')
     q = request.args.get('q', '').strip()
     page = request.args.get('page', 1, type=int)
-    query = Book.query.filter_by(user_id=current_user.id)
+    query = Book.query.filter_by(user_id=current_user.id, shelved=True)
     if cid:
         query = query.filter_by(category_id=cid)
     if sf in ('reading', 'done'):
@@ -285,3 +298,24 @@ def book_highlights(id):
         })
 
     return jsonify({'highlights': list(groups.values())})
+
+
+@bp.route('/highlights/search')
+@frontend_login_required
+def highlight_search():
+    q = request.args.get('q', '').strip()
+    page = request.args.get('page', 1, type=int)
+    if not q or len(q) < 2:
+        return render_template('highlights/search.html', pagination=None, q=q)
+
+    query = Highlight.query.filter(
+        Highlight.user_id == current_user.safe_id,
+        Highlight.mark_text.contains(q)
+    ).join(Book, Highlight.book_id == Book.id).add_columns(
+        Highlight.id, Highlight.mark_text, Highlight.chapter_title,
+        Highlight.color_style, Book.id.label('book_id'),
+        Book.title.label('book_title'), Book.author.label('book_author')
+    ).order_by(Highlight.created_at.desc())
+
+    pagination = query.paginate(page=page, per_page=15)
+    return render_template('highlights/search.html', pagination=pagination, q=q)

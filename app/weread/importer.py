@@ -67,6 +67,8 @@ def import_shelf_to_db(user_id, api_key=None):
             imported=True,
             category_id=cat_id,
             status='done' if b.get('finishReading', 0) else 'reading',
+            progress=b.get('progress', 0),
+            last_read_at=datetime.fromtimestamp(b['readUpdateTime']) if b.get('readUpdateTime') else None,
         )
         db.session.add(book)
         imported += 1
@@ -108,6 +110,9 @@ def sync_shelf_for_user(user_id, ttl_seconds=300):
         existing = Book.query.filter_by(weread_book_id=weread_id, user_id=user_id).first()
         if existing:
             changed = False
+            if not existing.shelved:
+                existing.shelved = True
+                changed = True
             if not existing.cover_url and b.get('cover'):
                 existing.cover_url = b.get('cover')
                 changed = True
@@ -115,6 +120,15 @@ def sync_shelf_for_user(user_id, ttl_seconds=300):
             if existing.status != status_new:
                 existing.status = status_new
                 changed = True
+            progress_new = b.get('progress', 0)
+            if existing.progress != progress_new:
+                existing.progress = progress_new
+                changed = True
+            if b.get('readUpdateTime'):
+                lr = datetime.fromtimestamp(b['readUpdateTime'])
+                if existing.last_read_at != lr:
+                    existing.last_read_at = lr
+                    changed = True
             if not existing.imported:
                 existing.imported = True
                 changed = True
@@ -136,6 +150,8 @@ def sync_shelf_for_user(user_id, ttl_seconds=300):
             imported=True,
             category_id=cat_id,
             status='done' if b.get('finishReading', 0) else 'reading',
+            progress=b.get('progress', 0),
+            last_read_at=datetime.fromtimestamp(b['readUpdateTime']) if b.get('readUpdateTime') else None,
         )
         db.session.add(book)
         imported += 1
@@ -147,9 +163,9 @@ def sync_shelf_for_user(user_id, ttl_seconds=300):
     ).all()
     for book in local_books:
         if book.weread_book_id not in api_ids:
-            Highlight.query.filter_by(book_id=book.id).delete()
-            db.session.delete(book)
-            deleted += 1
+            if book.shelved:
+                book.shelved = False
+                deleted += 1
 
     db.session.commit()
     _sync_cache[user_id] = now
@@ -225,3 +241,16 @@ def import_highlights_for_book(book, user_id):
 
     db.session.commit()
     return {'imported': imported, 'total': len(data.get('updated', []))}
+
+
+def categorize_all_books():
+    """为所有用户的藏书自动匹配微信读书分类。"""
+    from app.models import User
+    users = User.query.all()
+    total_matched = 0
+    total_skipped = 0
+    for user in users:
+        result = update_categories_from_api(user.id)
+        total_matched += result['matched']
+        total_skipped += result['skipped']
+    return {'categorized': total_matched, 'skipped': total_skipped}

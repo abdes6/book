@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(config_class=Config):
+    if not config_class.SECRET_KEY or not config_class.SQLALCHEMY_DATABASE_URI:
+        raise RuntimeError(
+            '缺少必需的环境变量：SECRET_KEY 和 DATABASE_URL。\n'
+            '请在项目根目录创建 .env 文件，参考 .env.example'
+        )
     app = Flask(__name__)
     app.config.from_object(config_class)
 
