@@ -59,7 +59,7 @@ a:hover {
   font-weight: 500;
   font-size: 0.925rem;
   color: var(--ink-light) !important;
-  padding: 0.5rem 1rem !important;
+  padding: 0.5rem 1.5rem !important;
   border-radius: var(--radius-sm);
   transition: color var(--transition), background var(--transition);
 }
@@ -79,8 +79,8 @@ a:hover {
   content: '';
   position: absolute;
   bottom: 2px;
-  left: 1rem;
-  right: 1rem;
+  left: 1.5rem;
+  right: 1.5rem;
   height: 2px;
   background: var(--warm-accent);
   border-radius: 2px;
