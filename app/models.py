@@ -66,7 +66,6 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     weread_api_key = db.Column(db.String(200), default='', nullable=True)
     shelf_synced = db.Column(db.Boolean, default=False)

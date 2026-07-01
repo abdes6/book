@@ -13,7 +13,7 @@ def login():
         if form.captcha.data.upper() != session.get('captcha', ''):
             flash('验证码错误', 'danger')
             return render_template('admin/login.html', form=form)
-        admin = User.query.filter_by(username=form.username.data, is_admin=True).first()
+        admin = User.query.filter_by(username=form.username.data).first()
         if admin and admin.check_password(form.password.data):
             login_user(admin)
             session.pop('captcha', None)

@@ -25,7 +25,7 @@
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('ai_reader.index') }}">🤖 AI 读书</a></li>
             </ul>
             <ul class="navbar-nav">
-                {% if current_user.is_authenticated and not current_user.is_admin %}
+                {% if current_user.is_authenticated %}
                 <li class="nav-item"><span class="nav-link text-light">{{ current_user.username }}</span></li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">退出</a></li>
                 {% endif %}

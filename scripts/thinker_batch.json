@@ -1,0 +1,149 @@
+{
+  "jobs": 4,
+  "tasks": [
+    {
+      "id": "laozi",
+      "prompt": "Half-body portrait of Laozi (Li Er). Appearance: elderly man with long white eyebrows, long white beard, broad forehead, large earlobes, hair in a topknot bun (盘髻). Elderly. Wearing ancient Chinese robes, crossed-collar garment (交领右衽), hair in a topknot or guan (冠). Expression: serene, detached expression, slight enigmatic smile, eyes half-closed in contemplation. Clear recognizable likeness of 老子.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/laozi.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "confucius",
+      "prompt": "Half-body portrait of Confucius (Kong Qiu). Appearance: elderly man with flowing beard, kind eyes, broad forehead, hair tied in a bun, traditional scholar's cap (儒冠). Wearing ancient Chinese robes, crossed-collar garment (交领右衽), hair in a topknot or guan (冠). Expression: warm, benevolent expression, gentle eyes, upright dignified posture. Clear recognizable likeness of 孔子.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/confucius.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "socrates",
+      "prompt": "Half-body portrait of Socrates. Appearance: bald head, broad flat nose, round face, thick beard, stocky build, snub nose, bulging eyes. Wearing ancient Greek himation or chiton draped over one shoulder, sandals, classical Greek attire. Expression: thoughtful, inquisitive expression, engaged and alert gaze. Clear recognizable likeness of 苏格拉底.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/socrates.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "plato",
+      "prompt": "Half-body portrait of Plato. Appearance: high forehead, receding hair, full beard, aristocratic features, draped in himation. Elderly. Wearing ancient Greek himation or chiton draped over one shoulder, sandals, classical Greek attire. Expression: thoughtful, inquisitive expression, engaged and alert gaze. Clear recognizable likeness of 柏拉图.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/plato.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "aristotle",
+      "prompt": "Half-body portrait of Aristotle. Appearance: balding crown, short hair and beard, refined features, thoughtful eyes, draped in Greek himation. Elderly. Wearing ancient Greek himation or chiton draped over one shoulder, sandals, classical Greek attire. Expression: thoughtful, inquisitive expression, engaged and alert gaze. Clear recognizable likeness of 亚里士多德.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/aristotle.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "zhuangzi",
+      "prompt": "Half-body portrait of Zhuangzi (Chuang Tzu). Appearance: free-spirited appearance, loose unkempt hair or casual topknot, thin face, long beard, Daoist robe, mischievous smile. Wearing ancient Chinese robes, crossed-collar garment (交领右衽), loose sleeves, hair tied up. Expression: serene, detached expression, slight enigmatic smile, eyes half-closed in contemplation. Clear recognizable likeness of 庄子.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/zhuangzi.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "kant",
+      "prompt": "Half-body portrait of Immanuel Kant. Appearance: small frail build, large forehead, receding hair pulled back, small wig, bright piercing eyes, 18th century formal coat. Wearing 18th-19th century German formal wear, frock coat, cravat or neckcloth. Expression: serious, deeply contemplative expression, furrowed brow. Clear recognizable likeness of 康德.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/kant.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "hegel",
+      "prompt": "Half-body portrait of Georg Wilhelm Friedrich Hegel. Appearance: receding hairline, sideburns, stern expression, high forehead, glasses or spectacles, 19th century frock coat. Wearing 18th-19th century German formal wear, frock coat, cravat or neckcloth. Expression: intense, contemplative gaze, furrowed brow in deep thought. Clear recognizable likeness of 黑格尔.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/hegel.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "schopenhauer",
+      "prompt": "Half-body portrait of Arthur Schopenhauer. Appearance: bushy white side-whiskers, receding hair, penetrating blue eyes, round face, 19th century suit, bitter expression. Wearing 18th-19th century German formal wear, frock coat, cravat or neckcloth. Expression: intense, brooding expression, furrowed brow, penetrating gaze. Clear recognizable likeness of 叔本华.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/schopenhauer.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "nietzsche",
+      "prompt": "Half-body portrait of Friedrich Nietzsche. Appearance: enormous drooping walrus mustache, receding hairline, deep-set intense eyes, high forehead, prominent nose, 19th century suit. Wearing 19th century European formal attire, frock coat or suit, cravat. Expression: intense existential gaze, furrowed brow, piercing eyes. Clear recognizable likeness of 尼采.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/nietzsche.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "frege",
+      "prompt": "Half-body portrait of Gottlob Frege. Appearance: large bushy beard covering most of face, receding hair, spectacles, serious expression, 19th century formal wear. Wearing 18th-19th century German formal wear, frock coat, cravat or neckcloth. Expression: sharp, analytical gaze, precise composed expression. Clear recognizable likeness of 弗雷格.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/frege.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "freud",
+      "prompt": "Half-body portrait of Sigmund Freud. Appearance: neatly trimmed beard, receding hair, cigar, piercing dark eyes, round face, vest and suit, intelligent gaze. Wearing 19th century European formal attire, frock coat or suit, cravat. Expression: intense, probing gaze, observant expression. Clear recognizable likeness of 弗洛伊德.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/freud.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "adler",
+      "prompt": "Half-body portrait of Alfred Adler. Appearance: neatly trimmed mustache, receding hair, round wire-rimmed glasses, kind yet penetrating eyes, 20th century suit. Wearing 19th century Central European formal attire, frock coat, vest. Expression: analytical yet empathetic expression, attentive gaze. Clear recognizable likeness of 阿德勒.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/adler.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "jung",
+      "prompt": "Half-body portrait of Carl Gustav Jung. Appearance: broad face, high forehead, receding hair, intense deep-set eyes, thoughtful expression, suit vest, pipe occasionally. Wearing 19th century European formal wear, suit vest, collar. Expression: analytical yet empathetic expression, attentive gaze. Clear recognizable likeness of 荣格.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/jung.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "russell",
+      "prompt": "Half-body portrait of Bertrand Russell. Appearance: bushy eyebrows, sharp penetrating eyes, receding hair, tall lean figure, 20th century suit, alert intellectual expression. Wearing 19th century British formal attire, frock coat, cravat, Victorian style. Expression: sharp, analytical gaze, precise composed expression. Clear recognizable likeness of 罗素.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/russell.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "wittgenstein",
+      "prompt": "Half-body portrait of Ludwig Wittgenstein. Appearance: sharp angular features, intense deep-set eyes, receding hair, thin lips, austere expression, simple suit. Wearing 19th century Central European formal attire, frock coat, vest. Expression: sharp, analytical gaze, precise composed expression. Clear recognizable likeness of 维特根斯坦.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/wittgenstein.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "sartre",
+      "prompt": "Half-body portrait of Jean-Paul Sartre. Appearance: cross-eyed gaze (strabismus), receding hair, mustache, pipe, intense intellectual expression, 20th century French intellectual attire, turtleneck or suit. Wearing 19th-20th century French formal wear, suit, coat, bohemian style for intellectuals. Expression: intense existential gaze, furrowed brow, piercing eyes. Clear recognizable likeness of 萨特.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/sartre.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    },
+    {
+      "id": "camus",
+      "prompt": "Half-body portrait of Albert Camus. Appearance: handsome features, cigarette often in mouth, wavy hair, overcoat collar turned up, intense thoughtful expression, French bohemian style. Wearing 19th-20th century French formal wear, suit, coat, bohemian style for intellectuals. Expression: intense existential gaze, furrowed brow, piercing eyes. Clear recognizable likeness of 加缪.\n\nStyle: warm beige background (#F7F3ED subtle warm cream), black baimiao (白描) line art, half-body portrait facing forward, single-color fine brushstrokes, minimalist traditional Chinese ink aesthetic, ample negative space, elegant hand-drawn line quality. No shading, no color except the warm beige background.",
+      "image": "app/static/images/thinkers/camus.png",
+      "provider": "seedream",
+      "ar": "4:5",
+      "quality": "2k"
+    }
+  ]
+}

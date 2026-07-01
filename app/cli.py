@@ -13,8 +13,8 @@ OLD_CATEGORIES = ['科幻', '技术', '哲学', '传记', '经济', '社会',
 
 
 def init_db():
-    if not User.query.filter_by(is_admin=True).first():
-        admin = User(username='admin', email='admin@book.com', is_admin=True)
+    if not User.query.first():
+        admin = User(username='admin', email='admin@book.com')
         admin.set_password('admin123')
         db.session.add(admin)
 
