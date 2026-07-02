@@ -16,9 +16,11 @@
         {% if book.isbn %}<p><small>ISBN: {{ book.isbn }}</small></p>{% endif %}
         {% if book.category %}<p>分类：<span class="badge bg-secondary">{{ book.category.name }}</span></p>{% endif %}
         <p>状态：<span class="badge bg-{{ 'info' if book.status=='reading' else 'success' }} fs-6">{{ {'reading':'在读','done':'读完'}[book.status] }}</span></p>
+        {% if book.last_read_at %}
+        <p class="text-muted small">最近阅读：{{ book.last_read_at.strftime('%Y-%m-%d') }}</p>
+        {% endif %}
         {% if book.rating and book.rating > 0 %}<p>评分：{{ book.rating }} / 5</p>{% endif %}
         {% if book.summary %}<div class="mt-3"><h5>简介</h5><p>{{ book.summary }}</p></div>{% endif %}
-        {% if book.notes %}<div class="mt-3"><h5>读后感</h5><div class="p-3 rounded" style="background:var(--cream);">{{ book.notes }}</div></div>{% endif %}
         <p class="mt-3 text-muted small">添加时间：{{ book.created_at.strftime('%Y-%m-%d') }}</p>
     </div>
 </div>
@@ -77,8 +79,12 @@ fetch('{{ url_for("main.book_highlights", id=book.id) }}')
                 html += '<h5 class="mt-3 mb-2 text-secondary">' + group.chapter_title + '</h5>';
                 group.items.forEach(function(item) {
                     total++;
+                    var noteUrl = '{{ url_for("notes.note_create", book_id=book.id) }}?highlight_id=' + item.id;
                     html += '<div class="highlight-item" style="border-left-color:' + item.color + ';">';
-                    html += '<p class="mb-1">' + item.mark_text + '</p>';
+                    html += '<div class="d-flex justify-content-between align-items-start">';
+                    html += '<p class="mb-1 flex-grow-1">' + item.mark_text + '</p>';
+                    html += '<a href="' + noteUrl + '" class="btn btn-sm btn-outline-secondary ms-2 flex-shrink-0" title="基于此划线写笔记" style="font-size:0.8rem;">📝</a>';
+                    html += '</div>';
                     if (item.created_at) html += '<small class="text-muted">' + item.created_at + '</small>';
                     html += '</div>';
                 });

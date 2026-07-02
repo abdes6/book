@@ -16,10 +16,16 @@
                 <a href="{{ url_for('notes.note_edit', id=note.id) }}" class="btn btn-sm btn-outline-primary">编辑</a>
             </div>
         </div>
-        <p class="text-muted small mb-4">
+        <p class="text-muted small mb-2">
             所属书籍：<a href="{{ url_for('main.book_detail', id=note.book_id) }}">{{ note.book.title }}</a>
             &middot; 更新于 {{ note.updated_at.strftime('%Y-%m-%d %H:%M') if note.updated_at else '' }}
         </p>
+        {% if note.highlight %}
+        <div class="alert alert-light border mb-3 py-2" style="font-size:0.9rem;">
+            <strong>引用划线：</strong>{{ note.highlight.mark_text }}
+            {% if note.highlight.chapter_title %}<span class="text-muted d-block small">{{ note.highlight.chapter_title }}</span>{% endif %}
+        </div>
+        {% endif %}
         <div class="note-content p-4 rounded" style="background:var(--cream);">
             {{ note.content|markdown|safe }}
         </div>

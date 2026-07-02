@@ -9,12 +9,13 @@
     <h3>阅读统计</h3>
 </div>
 
+
 <div class="row g-3 mb-4">
     {% for data, label in [(weekly,'本周'), (monthly,'本月'), (annually,'今年'), (overall,'总计')] %}
-    <div class="col-md-3 col-6{% if label == '总计' %} d-flex{% endif %}">
-        <div class="stat-card{% if label == '总计' %} h-100{% endif %}">
-            {% set icons = {'本周':'📅','本月':'📆','今年':'🏆','总计':'📚'} %}
-            <div class="stat-label">{{ icons.get(label, '') }} {{ label }}</div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card h-100">
+            {% set icon_labels = {'本周':'周','本月':'月','今年':'年','总计':'总'} %}
+            <div class="stat-label"><span class="stat-icon stat-icon-{{ {'本周':'week','本月':'month','今年':'year','总计':'total'}[label] }}">{{ icon_labels.get(label, '') }}</span> {{ label }}</div>
             <div class="stat-value">
                 {% if data and data.totalReadTime is defined %}
                 {{ data.totalReadTime | fmt_seconds }}
@@ -30,7 +31,7 @@
             {% endif %}
             {% set cmp = data.get('compare') if data else none %}
             {% if cmp is not none %}
-            <span class="badge bg-{{ 'success' if cmp > 0 else 'danger' }}" style="margin-top:0.35rem;">
+            <span class="stat-badge {{ 'stat-badge-up' if cmp > 0 else 'stat-badge-down' }}">
                 {{ cmp | fmt_compare }}
             </span>
             {% endif %}
@@ -43,7 +44,7 @@
   <div class="col-12 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">📊 阅读趋势</h5>
+        <h5 class="card-title stat-card-title">阅读趋势</h5>
         <canvas id="dailyTrendChart" height="100"></canvas>
       </div>
     </div>
@@ -54,7 +55,7 @@
   <div class="col-md-6 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">🥧 分类分布</h5>
+        <h5 class="card-title stat-card-title">分类分布</h5>
         <canvas id="categoryChart" height="200"></canvas>
       </div>
     </div>
@@ -62,7 +63,7 @@
   <div class="col-md-6 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">📈 月度趋势</h5>
+        <h5 class="card-title stat-card-title">月度趋势</h5>
         <canvas id="monthlyTrendChart" height="200"></canvas>
       </div>
     </div>
@@ -73,7 +74,7 @@
   <div class="col-12 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">🌡️ 年度阅读日历</h5>
+        <h5 class="card-title stat-card-title">年度阅读日历</h5>
         <div id="heatmap-calendar" class="heatmap-container"></div>
       </div>
     </div>
@@ -84,7 +85,7 @@
   <div class="col-md-6 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">🕐 阅读时段分布</h5>
+        <h5 class="card-title stat-card-title">阅读时段分布</h5>
         <canvas id="timeRadarChart" height="200"></canvas>
       </div>
     </div>
@@ -92,33 +93,33 @@
   <div class="col-md-6 d-flex">
     <div class="card h-100 w-100">
       <div class="card-body">
-        <h5 class="card-title">🎯 阅读目标</h5>
+        <h5 class="card-title stat-card-title">阅读目标</h5>
         {% set ins = chart_data.insights if chart_data else None %}
         {% if ins %}
         <div class="mb-3">
-          <small class="text-muted">🎯 年度目标</small>
+          <small class="text-muted">年度目标</small>
           <div class="d-flex justify-content-between">
             <span>{{ '{:d}'.format(ins.year_goal_current // 3600) }}h / {{ '{:d}'.format(ins.year_goal_target // 3600) if ins.year_goal_target else 0 }}h</span>
             <span>{{ '%.0f'|format(ins.year_goal_current / ins.year_goal_target * 100) if ins.year_goal_target else 0 }}%</span>
           </div>
-          <div class="progress" style="height:8px">
-            <div class="progress-bar bg-danger" role="progressbar"
+          <div class="stat-progress">
+            <div class="stat-progress-bar stat-progress-year"
                  style="width:{{ '%.0f'|format(ins.year_goal_current / ins.year_goal_target * 100) if ins.year_goal_target else 0 }}%"></div>
           </div>
         </div>
         <div class="mb-3">
-          <small class="text-muted">📅 本月目标</small>
+          <small class="text-muted">本月目标</small>
           <div class="d-flex justify-content-between">
             <span>{{ '{:d}'.format(ins.month_goal_current // 3600) }}h / {{ '{:d}'.format(ins.month_goal_target // 3600) if ins.month_goal_target else 0 }}h</span>
             <span>{{ '%.0f'|format(ins.month_goal_current / ins.month_goal_target * 100) if ins.month_goal_target else 0 }}%</span>
           </div>
-          <div class="progress" style="height:8px">
-            <div class="progress-bar bg-warning" role="progressbar"
+          <div class="stat-progress">
+            <div class="stat-progress-bar stat-progress-month"
                  style="width:{{ '%.0f'|format(ins.month_goal_current / ins.month_goal_target * 100) if ins.month_goal_target else 0 }}%"></div>
           </div>
         </div>
         <div>
-          <small class="text-muted">🔥 连续阅读</small>
+          <small class="text-muted">连续阅读</small>
           <div class="d-flex justify-content-between">
             <span>当前: <strong>{{ ins.current_streak }}</strong> 天</span>
             <span>最长: <strong>{{ ins.longest_streak }}</strong> 天</span>
@@ -144,28 +145,30 @@
         <div class="row">
           <div class="col-md-6">
             <h6 class="text-secondary mb-3">总排行</h6>
-            <ol class="list-group list-group-numbered">
+            <ul class="list-group list-group-flush">
               {% for item in overall.readLongest %}
               {% set b = item.get('book') or {} %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ b.get('title', '未知') }}</span>
-                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              <li class="list-group-item d-flex align-items-center px-0">
+                <span class="ranking-num">{{ loop.index }}</span>
+                <span class="flex-grow-1 text-truncate me-2">{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small flex-shrink-0">{{ item.readTime | fmt_seconds }}</span>
               </li>
               {% endfor %}
-            </ol>
+            </ul>
           </div>
           {% if annually and annually.readLongest %}
           <div class="col-md-6">
             <h6 class="text-secondary mb-3">今年排行</h6>
-            <ol class="list-group list-group-numbered">
+            <ul class="list-group list-group-flush">
               {% for item in annually.readLongest %}
               {% set b = item.get('book') or {} %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ b.get('title', '未知') }}</span>
-                <span class="text-muted small">{{ item.readTime | fmt_seconds }}</span>
+              <li class="list-group-item d-flex align-items-center px-0">
+                <span class="ranking-num">{{ loop.index }}</span>
+                <span class="flex-grow-1 text-truncate me-2">{{ b.get('title', '未知') }}</span>
+                <span class="text-muted small flex-shrink-0">{{ item.readTime | fmt_seconds }}</span>
               </li>
               {% endfor %}
-            </ol>
+            </ul>
           </div>
           {% endif %}
         </div>
@@ -182,7 +185,7 @@
         <h6 class="text-secondary mb-3">阅读统计</h6>
         <div class="d-flex flex-wrap gap-2 mb-4">
           {% for s in overall.readStat %}
-          <span class="badge bg-secondary">{{ s.stat }} {{ s.counts }}</span>
+          <span class="stat-badge-tag">{{ s.stat }} {{ s.counts }}</span>
           {% endfor %}
         </div>
         {% endif %}

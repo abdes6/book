@@ -6,10 +6,10 @@ from urllib.parse import quote
 from flask import render_template, redirect, url_for, flash, request, jsonify, current_app, Response, abort
 from flask_login import current_user
 from werkzeug.utils import secure_filename
-from app.extensions import csrf, frontend_login_required
+from app.extensions import frontend_login_required
 from app.notes import bp
 from app.notes.forms import NoteForm
-from app.models import db, Book, Note, NoteImage
+from app.models import db, Book, Note, NoteImage, Highlight
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
@@ -34,12 +34,18 @@ def book_notes(book_id):
 @bp.route('/create/<int:book_id>', methods=['GET', 'POST'])
 @frontend_login_required
 def note_create(book_id):
-    book = Book.query.get_or_404(book_id)
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first_or_404()
+    highlight_id = request.args.get('highlight_id', type=int)
+    highlight = None
+    if highlight_id:
+        highlight = Highlight.query.filter_by(id=highlight_id, book_id=book.id, user_id=current_user.id).first()
+
     form = NoteForm()
     if form.validate_on_submit():
         note = Note(
             user_id=current_user.id,
             book_id=book.id,
+            highlight_id=request.form.get('highlight_id', type=int) or None,
             title=form.title.data,
             content=form.content.data,
         )
@@ -56,7 +62,13 @@ def note_create(book_id):
         db.session.commit()
         flash('笔记保存成功', 'success')
         return redirect(url_for('notes.note_detail', id=note.id))
-    return render_template('notes/create.html', form=form, book=book)
+
+    # 预填：如果有引用划线
+    if highlight and not form.title.data:
+        form.title.data = f'笔记：{highlight.mark_text[:30]}...'
+        form.content.data = f'> {highlight.mark_text}\n\n'
+
+    return render_template('notes/create.html', form=form, book=book, highlight=highlight)
 
 
 @bp.route('/<int:id>')
@@ -123,7 +135,6 @@ def note_edit(id):
                           existing_images=existing_images)
 
 
-@csrf.exempt
 @bp.route('/<int:id>/delete', methods=['POST'])
 @frontend_login_required
 def note_delete(id):
@@ -172,7 +183,6 @@ def export_pdf(id):
 
 
 @bp.route('/upload-image', methods=['POST'])
-@csrf.exempt
 @frontend_login_required
 def upload_image():
     if 'image' not in request.files:

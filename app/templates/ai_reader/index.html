@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% block title %}AI 读书助手{% endblock %}
+{% block content %}
+<div class="row ai-reader-layout g-0">
+  <div class="col-12 col-md-3 ai-reader-sidebar">
+    <div class="p-3">
+      <h5 class="ai-reader-sidebar-title">📚 选择书籍</h5>
+      <input type="text" id="book-search" class="form-control ai-reader-search" placeholder="搜索书名或作者...">
+      <div id="book-list" class="ai-reader-book-list"></div>
+    </div>
+  </div>
+  <div class="col-12 col-md-9 ai-reader-main">
+    <div id="placeholder" class="ai-reader-welcome">
+      <div class="welcome-msg">
+        <div class="rounded-circle welcome-avatar d-inline-flex align-items-center justify-content-center ai-reader-welcome-icon">🤖</div>
+        <h5>AI 读书助手</h5>
+        <div class="welcome-divider"></div>
+        <p class="welcome-quote">从左侧选择一本书，开启智能对话、摘要、书评、分析与推荐</p>
+        <div class="welcome-tags">
+          <span class="tag">智能对话</span>
+          <span class="tag">书籍摘要</span>
+          <span class="tag">AI 书评</span>
+          <span class="tag">深度分析</span>
+          <span class="tag">个性推荐</span>
+        </div>
+        <p class="welcome-hint mt-3">搜索书名快速定位，点击即可开始</p>
+      </div>
+    </div>
+    <div id="ai-panel" class="d-none ai-reader-panel">
+      <div class="ai-reader-book-header" id="book-header">
+        <div class="ai-reader-header-cover" id="header-cover"></div>
+        <div class="ai-reader-header-info">
+          <div class="ai-reader-header-title" id="header-title"></div>
+          <div class="ai-reader-header-meta" id="header-meta"></div>
+        </div>
+        <span class="ai-reader-header-status" id="header-status"></span>
+      </div>
+      <ul class="nav ai-reader-tabs" id="aiTabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="chat">💬 对话</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="summary">📝 摘要</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="review">⭐ 书评</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="analysis">🔍 分析</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="recommend">📚 推荐</button></li>
+      </ul>
+      <div class="tab-content ai-reader-tab-content" id="aiTabContent">
+        <div class="tab-pane active" id="tab-chat">
+          <div id="chat-messages" class="ai-reader-chat-messages"></div>
+          <div id="chat-options" class="options-container d-flex gap-2 flex-wrap px-3 py-2"></div>
+          <div id="chat-loading" class="typing-indicator d-none ms-3 mb-2">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="px-3 pb-3">
+            <div class="chat-input-group">
+              <input type="text" id="chat-input" placeholder="输入你的问题..." autofocus>
+              <button class="btn-send" id="chat-send">发送</button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane d-none" id="tab-summary">
+          <div class="ai-reader-content-card"><div class="card-body ai-content"></div></div>
+        </div>
+        <div class="tab-pane d-none" id="tab-review">
+          <div class="ai-reader-content-card"><div class="card-body ai-content"></div></div>
+        </div>
+        <div class="tab-pane d-none" id="tab-analysis">
+          <div class="ai-reader-content-card"><div class="card-body ai-content"></div></div>
+        </div>
+        <div class="tab-pane d-none" id="tab-recommend">
+          <div class="ai-reader-content-card"><div class="card-body ai-content"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  var currentBookId = null;
+
+  fetch('{{ url_for("ai_reader.book_list") }}').then(function(r){ return r.json(); }).then(function(books){
+    var el = document.getElementById('book-list');
+    books.forEach(function(b, index){
+      var a = document.createElement('a');
+      a.className = 'ai-reader-book-item';
+      a.href = '#';
+      a.dataset.id = b.id;
+      a.dataset.title = b.title;
+      a.dataset.author = b.author;
+      a.dataset.cover = b.cover_url;
+      a.dataset.status = b.status;
+      var coverHtml = b.cover_url
+        ? '<img src="' + escapeHtml(b.cover_url) + '" alt="" loading="lazy">'
+        : '<span class="ai-reader-book-item-fallback">' + escapeHtml(b.title.charAt(0)) + '</span>';
+      a.innerHTML = '<div class="ai-reader-book-item-cover">' + coverHtml + '</div>' +
+        '<div class="ai-reader-book-item-info">' +
+        '<div class="ai-reader-book-item-title">' + escapeHtml(b.title) + '</div>' +
+        '<div class="ai-reader-book-item-author">' + escapeHtml(b.author) + '</div>' +
+        '</div>' +
+        '<span class="ai-reader-book-item-dot status-' + escapeHtml(b.status || 'reading') + '"></span>';
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        selectBook(b.id, b.title);
+        document.querySelectorAll('#book-list .active').forEach(function(x){ x.classList.remove('active'); });
+        a.classList.add('active');
+      });
+      el.appendChild(a);
+    });
+  });
+
+  document.getElementById('book-search').addEventListener('input', function(){
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('#book-list .ai-reader-book-item').forEach(function(item){
+      var match = item.textContent.toLowerCase().includes(q);
+      item.style.display = match ? '' : 'none';
+    });
+  });
+
+  document.querySelectorAll('#aiTabs .nav-link').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('#aiTabs .nav-link').forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.add('d-none'); });
+      var target = document.getElementById('tab-' + tab.dataset.tab);
+      target.classList.remove('d-none');
+      if(currentBookId && tab.dataset.tab !== 'chat') loadTabContent(tab.dataset.tab, currentBookId, target);
+      if(tab.dataset.tab === 'chat') document.getElementById('chat-input').focus();
+    });
+  });
+
+  document.getElementById('chat-send').addEventListener('click', sendChat);
+  document.getElementById('chat-input').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') sendChat();
+  });
+
+  function updateBookHeader(id, title){
+    var a = document.querySelector('.ai-reader-book-item[data-id="' + id + '"]');
+    if (!a) return;
+    var cover = a.dataset.cover;
+    var author = a.dataset.author || '未知作者';
+    var statusMap = {done: '已读完', reading: '在读', wish: '想读'};
+    var statusText = statusMap[a.dataset.status] || a.dataset.status;
+    document.getElementById('header-cover').innerHTML = cover
+      ? '<img src="' + escapeHtml(cover) + '" alt="">'
+      : '<span>' + escapeHtml(title.charAt(0)) + '</span>';
+    document.getElementById('header-title').textContent = title;
+    document.getElementById('header-meta').textContent = author;
+    var statusEl = document.getElementById('header-status');
+    statusEl.textContent = statusText;
+    statusEl.className = 'ai-reader-header-status status-' + (a.dataset.status || 'reading');
+  }
+
+  function selectBook(id, title){
+    currentBookId = id;
+    document.getElementById('placeholder').classList.add('d-none');
+    var panel = document.getElementById('ai-panel');
+    panel.classList.remove('d-none');
+    updateBookHeader(id, title);
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('chat-input').value = '';
+    document.getElementById('chat-loading').classList.add('d-none');
+    document.querySelectorAll('.tab-pane .ai-content').forEach(function(el){ el.innerHTML = ''; el.dataset.loaded = ''; });
+    document.getElementById('tab-chat').classList.remove('d-none');
+    document.querySelectorAll('.tab-pane').forEach(function(p){
+      if(p.id !== 'tab-chat') p.classList.add('d-none');
+    });
+    document.querySelectorAll('#aiTabs .nav-link').forEach(function(t){
+      t.classList.toggle('active', t.dataset.tab === 'chat');
+    });
+    document.getElementById('chat-input').focus();
+    fetch('/ai-reader/' + id + '/chat').then(function(r){ return r.json(); }).then(function(data){
+      if(data.messages){
+        var el = document.getElementById('chat-messages');
+        data.messages.forEach(function(m){
+          addChatBubble(m.role, m.content_html || m.content);
+        });
+        if(data.options) addOptions(data.options);
+      }
+    });
+  }
+
+  function loadTabContent(tab, bookId, targetEl){
+    var contentEl = targetEl.querySelector('.ai-content');
+    if(!contentEl || contentEl.dataset.loaded) return;
+    contentEl.innerHTML = '<div class="text-center py-5"><div class="spinner-border ai-reader-spinner"></div><p class="mt-2 text-muted">正在生成...</p></div>';
+    fetch('/ai-reader/' + bookId + '/' + tab).then(function(r){ return r.json(); }).then(function(data){
+      contentEl.dataset.loaded = '1';
+      if(data.error){
+        contentEl.innerHTML = '<div class="alert alert-warning">' + escapeHtml(data.error) + '</div>';
+      } else {
+        var html = data.content_html ? '<div class="ai-reader-content-body">' + data.content_html + '</div>' : '';
+        if(data.recommendations){
+          html = '<div class="ai-reader-rec-list">' + data.recommendations.map(function(r, i){
+            return '<div class="ai-reader-rec-item">' + escapeHtml(r) + '</div>';
+          }).join('') + '</div>';
+        }
+        html += '<div class="mt-3"><button class="btn btn-sm btn-outline-secondary" onclick="regenerate(this,\'' + tab + '\',' + bookId + ')">重新生成</button></div>';
+        contentEl.innerHTML = html;
+      }
+    }).catch(function(){
+      contentEl.innerHTML = '<div class="alert alert-danger">加载失败</div>';
+    });
+  }
+
+  window.regenerate = function(btn, tab, bookId){
+    var target = btn.closest('.tab-pane');
+    var contentEl = target.querySelector('.ai-content');
+    if(contentEl) contentEl.dataset.loaded = '';
+    loadTabContent(tab, bookId, target);
+  };
+
+  function sendChat(){
+    if(!currentBookId || !document.getElementById('chat-input')) return;
+    var input = document.getElementById('chat-input');
+    var msg = input.value.trim();
+    if(!msg) return;
+    input.value = '';
+    addChatBubble('user', msg);
+    document.getElementById('chat-options').innerHTML = '';
+    document.getElementById('chat-loading').classList.remove('d-none');
+    fetch('/ai-reader/' + currentBookId + '/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg})
+    }).then(function(r){ return r.json(); }).then(function(data){
+      document.getElementById('chat-loading').classList.add('d-none');
+      if(data.error){
+        addChatBubble('assistant', '⚠️ ' + data.error);
+      } else {
+        addChatBubble('assistant', data.reply_html || data.reply);
+        if(data.options) addOptions(data.options);
+      }
+    }).catch(function(){
+      document.getElementById('chat-loading').classList.add('d-none');
+      addChatBubble('assistant', '⚠️ 网络错误，请重试');
+    });
+  }
+
+  function addChatBubble(role, text){
+    var el = document.getElementById('chat-messages');
+    var div = document.createElement('div');
+    div.className = 'mb-3 msg-animate d-flex' + (role === 'user' ? ' justify-content-end' : ' align-items-start');
+    if(role !== 'user'){
+      div.innerHTML = '<div class="chat-bubble-thinker">' +
+        '<span class="bubble-author">AI 读书助手</span>' + text + '</div>';
+    } else {
+      div.innerHTML = '<div class="chat-bubble-user">' + escapeHtml(text).replace(/\n/g, '<br>') + '</div>';
+    }
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function addOptions(options){
+    var el = document.getElementById('chat-options');
+    el.innerHTML = '';
+    if(!options || !options.length) return;
+    options.forEach(function(opt){
+      var btn = document.createElement('button');
+      btn.className = 'option-pill';
+      btn.textContent = opt;
+      btn.addEventListener('click', function(){
+        document.getElementById('chat-input').value = opt;
+        sendChat();
+      });
+      el.appendChild(btn);
+    });
+  }
+
+  function escapeHtml(text){
+    if(typeof text !== 'string') return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(text));
+    return d.innerHTML;
+  }
+})();
+</script>
+{% endblock %}

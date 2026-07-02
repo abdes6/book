@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block title %}与 {{ thinker.name }} 对话{% endblock %}
+{% block content %}
+<div class="row thinker-chat-layout g-0" data-theme="{{ thinker.theme }}">
+    <div class="col-md-3 col-lg-2 thinker-chat-sidebar" id="thinker-sidebar">
+        <div class="thinker-sidebar-inner">
+            <div class="thinker-sidebar-header">
+                <small class="text-muted thinker-sidebar-label">历史对话</small>
+                <button class="thinker-sidebar-new" onclick="startNewChat()" title="新对话">+</button>
+            </div>
+            <div class="thinker-sidebar-list" id="history-list">
+                {% for c in conversations %}
+                <div class="history-item d-flex align-items-center {% if loop.first %}active{% endif %}" data-id="{{ c.id }}">
+                    <div class="thinker-history-content" onclick="loadConversation({{ c.id }})">
+                        <div class="history-title text-truncate">{{ c.title }}</div>
+                        <div class="history-time">{{ c.updated_at.strftime('%m-%d %H:%M') }}</div>
+                    </div>
+                    <button class="thinker-delete-btn" onclick="event.stopPropagation();deleteConv({{ c.id }})" title="删除对话">&times;</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9 col-lg-10 thinker-chat-main">
+        <div class="thinker-chat-card">
+            <div class="chat-header">
+                <button class="thinker-sidebar-toggle d-md-none" id="sidebar-toggle" onclick="toggleSidebar()" title="对话列表">☰</button>
+                <a href="{{ url_for('thinker.list_thinkers') }}" class="thinker-back-btn text-decoration-none text-muted me-1">&larr;</a>
+                <div class="rounded-circle avatar-mini d-inline-flex align-items-center justify-content-center flex-shrink-0 thinker-header-avatar">{{ thinker.name[0] }}</div>
+                <div class="flex-grow-1">
+                    <div class="thinker-name">{{ thinker.name }}</div>
+                    <div class="thinker-sub">{{ thinker.title or thinker.era or '' }}</div>
+                </div>
+                {% if thinker.theme %}
+                <span class="theme-badge ms-2">{{ thinker.theme }}</span>
+                {% endif %}
+                <div class="ms-2">
+                    <select class="thinker-conv-selector" id="conv-selector" onchange="if(this.value) loadConversation(parseInt(this.value))">
+                        <option value="">切换对话...</option>
+                        {% for c in conversations %}
+                        <option value="{{ c.id }}">{{ c.title[:30] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-msg" id="welcome-msg">
+                    <div class="rounded-circle welcome-avatar thinker-welcome-avatar d-inline-flex align-items-center justify-content-center">{{ thinker.name[0] }}</div>
+                    <h5>{{ thinker.name }}</h5>
+                    {% if thinker.era or thinker.school %}
+                    <div class="welcome-tags">
+                        {% if thinker.era %}<span class="tag">{{ thinker.era }}</span>{% endif %}
+                        {% if thinker.school %}<span class="tag">{{ thinker.school }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="welcome-divider"></div>
+                    {% if thinker.bio %}
+                    <p class="welcome-quote">“{{ thinker.bio[:100] }}”</p>
+                    {% endif %}
+                    <p class="welcome-hint">在下方输入你的问题，或选择回复选项开始探索</p>
+                </div>
+            </div>
+            <div class="options-container d-none" id="options-container">
+                <div class="d-flex flex-wrap gap-2" id="options-list"></div>
+            </div>
+            <div class="card-footer thinker-chat-footer">
+                <form id="chat-form" onsubmit="return sendMessage()">
+                    <div class="chat-input-group">
+                        <input type="text" id="message-input" placeholder="输入你的想法..." autofocus>
+                        <button type="submit" class="btn-send">发送</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+var currentConversationId = {% if conversations %}{{ conversations[0].id }}{% else %}null{% endif %};
+var thinkName = '{{ thinker.name }}';
+var csrfToken = '{{ csrf_token() }}';
+
+function scrollToBottom() {
+    var el = document.getElementById('chat-messages');
+    el.scrollTop = el.scrollHeight;
+}
+
+function toggleSidebar() {
+    document.getElementById('thinker-sidebar').classList.toggle('show');
+}
+
+function addMessage(role, content) {
+    var el = document.getElementById('chat-messages');
+    var d = document.createElement('div');
+    if (role === 'assistant') {
+        d.className = 'mb-3 d-flex msg-animate align-items-start';
+        d.innerHTML = '<div class="rounded-circle thinker-bubble-avatar flex-shrink-0">' + thinkName[0] + '</div>' +
+            '<div class="chat-bubble-thinker">' +
+            '<span class="bubble-author">' + thinkName + '</span>' + content + '</div>';
+    } else {
+        d.className = 'mb-3 d-flex msg-animate justify-content-end';
+        d.innerHTML = '<div class="chat-bubble-user">' + escapeHtml(content).replace(/\n/g, '<br>') + '</div>';
+    }
+    el.appendChild(d);
+    scrollToBottom();
+}
+
+function showTyping() {
+    var el = document.getElementById('chat-messages');
+    if (document.getElementById('typing-wrapper')) return;
+    var d = document.createElement('div');
+    d.className = 'mb-3 d-flex msg-animate';
+    d.id = 'typing-wrapper';
+    d.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+    el.appendChild(d);
+    scrollToBottom();
+}
+
+function hideTyping() {
+    var el = document.getElementById('typing-wrapper');
+    if (el) el.remove();
+}
+
+function showOptions(options) {
+    var container = document.getElementById('options-container');
+    var list = document.getElementById('options-list');
+    list.innerHTML = '';
+    if (options && options.length) {
+        container.classList.remove('d-none');
+        options.forEach(function(opt) {
+            var btn = document.createElement('button');
+            btn.className = 'option-pill';
+            btn.textContent = opt;
+            btn.onclick = function() {
+                document.getElementById('message-input').value = opt;
+                sendMessage();
+            };
+            list.appendChild(btn);
+        });
+    } else {
+        container.classList.add('d-none');
+    }
+}
+
+function sendMessage() {
+    var input = document.getElementById('message-input');
+    var msg = input.value.trim();
+    if (!msg) return false;
+    input.value = '';
+    document.getElementById('options-container').classList.add('d-none');
+    addMessage('user', msg);
+    var wel = document.getElementById('welcome-msg');
+    if (wel) wel.remove();
+    showTyping();
+
+    fetch('{{ url_for("thinker.send_message", slug=thinker.slug) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+        body: JSON.stringify({conversation_id: currentConversationId, message: msg})
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        hideTyping();
+        if (data.error) { addMessage('assistant', '错误: ' + data.error); return; }
+        currentConversationId = data.conversation_id;
+        addMessage('assistant', data.reply_html || data.reply);
+        showOptions(data.options);
+    }).catch(function() {
+        hideTyping();
+        addMessage('assistant', '对话服务暂时不可用，请稍后再试。');
+    });
+    return false;
+}
+
+function loadConversation(id) {
+    document.getElementById('options-container').classList.add('d-none');
+    hideTyping();
+    return fetch('/thinkers/conversation/' + id)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            currentConversationId = data.id;
+            var el = document.getElementById('chat-messages');
+            el.innerHTML = '';
+            var wel = document.getElementById('welcome-msg');
+            if (wel) wel.remove();
+            (data.messages || []).forEach(function(m) { addMessage(m.role, m.content_html || m.content); });
+            document.getElementById('conv-selector').value = data.id;
+            document.querySelectorAll('.history-item').forEach(function(h) { h.classList.remove('active'); });
+            var hi = document.querySelector('.history-item[data-id="' + data.id + '"]');
+            if (hi) hi.classList.add('active');
+            var sidebar = document.getElementById('thinker-sidebar');
+            if (sidebar) sidebar.classList.remove('show');
+        });
+}
+
+function startNewChat() {
+    fetch('{{ url_for("thinker.new_conversation", slug=thinker.slug) }}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken}
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        currentConversationId = data.id;
+        var el = document.getElementById('chat-messages');
+        el.innerHTML = '';
+        document.getElementById('welcome-msg') && document.getElementById('welcome-msg').remove();
+        document.getElementById('options-container').classList.add('d-none');
+        hideTyping();
+        (data.messages || []).forEach(function(m) { addMessage(m.role, m.content); });
+        showOptions(data.options);
+
+        var now = new Date();
+        var timeStr = ('0' + (now.getMonth()+1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) + ' ' +
+                      ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+
+        var hi = document.createElement('div');
+        hi.className = 'history-item d-flex align-items-center active';
+        hi.dataset.id = data.id;
+        hi.innerHTML = '<div class="thinker-history-content" onclick="loadConversation(' + data.id + ')">' +
+            '<div class="history-title text-truncate">' + escapeHtml(data.title) + '</div>' +
+            '<div class="history-time">' + timeStr + '</div></div>' +
+            '<button class="thinker-delete-btn" onclick="event.stopPropagation();deleteConv(' + data.id + ')" title="删除对话">&times;</button>';
+        var list = document.getElementById('history-list');
+        list.insertBefore(hi, list.firstChild);
+
+        document.querySelectorAll('.history-item').forEach(function(h) { h.classList.remove('active'); });
+        hi.classList.add('active');
+
+        var opt = document.createElement('option');
+        opt.value = data.id;
+        opt.textContent = data.title.slice(0, 30);
+        opt.selected = true;
+        document.getElementById('conv-selector').insertBefore(opt, document.getElementById('conv-selector').options[1]);
+
+        document.getElementById('message-input').focus();
+        var sidebar = document.getElementById('thinker-sidebar');
+        if (sidebar) sidebar.classList.remove('show');
+    });
+}
+
+function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+}
+
+function deleteConv(id) {
+    if (!confirm('确定删除此对话？')) return;
+    fetch('/thinkers/conversation/' + id + '/delete', {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken}
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (!data.ok) return;
+        var el = document.querySelector('.history-item[data-id="' + id + '"]');
+        if (el) el.remove();
+        var opt = document.querySelector('#conv-selector option[value="' + id + '"]');
+        if (opt) opt.remove();
+        if (currentConversationId === id) startNewChat();
+    });
+}
+
+document.getElementById('message-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+(function init() {
+    if (!currentConversationId) return;
+    loadConversation(currentConversationId).then(function() {
+        {% if opening_options %}
+        showOptions({{ opening_options | tojson }});
+        {% endif %}
+    });
+})();
+</script>
+{% endblock %}

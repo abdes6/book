@@ -1,37 +1,43 @@
 {% extends 'admin/base.html' %}
 {% block title %}后台概览{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">后台概览</h4>
-    <div class="d-flex gap-2">
-        <form method="POST" action="{{ url_for('admin.categorize_weread') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-warning" onclick="this.disabled=true;this.innerHTML='分类中...'">
-                🏷️ 自动分类
-            </button>
-        </form>
-        <form method="POST" action="{{ url_for('admin.import_weread') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-success" onclick="this.disabled=true;this.innerHTML='导入中...'">
-                📥 从微信读书导入
-            </button>
-        </form>
+<div class="page-title">概览</div>
+
+<div class="admin-stats">
+    <div class="admin-stat">
+        <div class="stat-label">总藏书</div>
+        <div class="stat-value">{{ total_books }}</div>
+    </div>
+    <div class="admin-stat">
+        <div class="stat-label">在读</div>
+        <div class="stat-value">{{ reading_count }}</div>
+    </div>
+    <div class="admin-stat">
+        <div class="stat-label">读完</div>
+        <div class="stat-value">{{ done_count }}</div>
+    </div>
+    <div class="admin-stat">
+        <div class="stat-label">分类</div>
+        <div class="stat-value">{{ category_count }}</div>
     </div>
 </div>
-<div class="row mb-4">
-    <div class="col-md-4"><div class="card text-bg-primary"><div class="card-body"><h5>总藏书</h5><p class="display-6">{{ total_books }}</p></div></div></div>
-    <div class="col-md-4"><div class="card text-bg-info"><div class="card-body"><h5>在读</h5><p class="display-6">{{ reading_count }}</p></div></div></div>
-    <div class="col-md-4"><div class="card text-bg-success"><div class="card-body"><h5>读完</h5><p class="display-6">{{ done_count }}</p></div></div></div>
-</div>
-<div class="card">
-    <div class="card-header">最近添加</div>
-    <div class="card-body">
-        <table class="table table-sm">
-            <tr><th>书名</th><th>作者</th><th>状态</th><th>时间</th></tr>
+
+<div class="data-card">
+    <div class="card-header">最近阅读</div>
+    <table class="admin-table">
+        <thead>
+            <tr><th>书名</th><th>作者</th><th>状态</th><th>最近阅读</th></tr>
+        </thead>
+        <tbody>
             {% for b in recent_books %}
-            <tr><td>{{ b.title }}</td><td>{{ b.author or '-' }}</td><td>{{ {'reading':'在读','done':'读完'}[b.status] }}</td><td>{{ b.created_at.strftime('%Y-%m-%d') }}</td></tr>
+            <tr>
+                <td style="font-weight:500;">{{ b.title }}</td>
+                <td>{{ b.author or '-' }}</td>
+                <td><span class="badge {{ 'badge-reading' if b.status=='reading' else 'badge-done' }}">{{ {'reading':'在读','done':'读完'}[b.status] }}</span></td>
+                <td class="td-date">{{ b.last_read_at.strftime('%Y-%m-%d') if b.last_read_at else b.created_at.strftime('%Y-%m-%d') }}</td>
+            </tr>
             {% endfor %}
-        </table>
-    </div>
+        </tbody>
+    </table>
 </div>
 {% endblock %}

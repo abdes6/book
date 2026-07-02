@@ -13,14 +13,10 @@ class LoginForm(FlaskForm):
 class BookForm(FlaskForm):
     title = StringField('书名', validators=[DataRequired(), Length(1, 200)])
     author = StringField('作者', validators=[Length(0, 100)])
-    isbn = StringField('ISBN', validators=[Length(0, 20)])
     cover_url = StringField('封面URL', validators=[Length(0, 500)])
-    summary = TextAreaField('简介')
-    rating = DecimalField('评分', validators=[Optional(), NumberRange(0, 5)], places=1)
     status = SelectField('阅读状态', choices=[
         ('reading', '在读'), ('done', '读完')
     ])
-    notes = TextAreaField('读后感')
     category_id = SelectField('分类', coerce=int, validators=[Optional()])
     submit = SubmitField('保存')
 
@@ -34,7 +30,6 @@ class UserLoginForm(FlaskForm):
     email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
     password = PasswordField('密码', validators=[DataRequired()])
     remember = BooleanField('记住我')
-    weread_api_key = StringField('微信读书 API Key（可选）', validators=[Optional()])
     submit = SubmitField('登录')
 
 
@@ -43,4 +38,5 @@ class RegisterForm(FlaskForm):
     email = StringField('邮箱', validators=[DataRequired(), Email(message='邮箱格式不正确')])
     password = PasswordField('密码', validators=[DataRequired(), Length(6, 50, message='密码至少6位')])
     confirm = PasswordField('确认密码', validators=[DataRequired(), EqualTo('password', message='两次密码不一致')])
+    weread_api_key = StringField('微信读书 API Key', validators=[DataRequired(message='API Key 为必填项')])
     submit = SubmitField('注册')

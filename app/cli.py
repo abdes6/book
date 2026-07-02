@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.models import Admin, Category
+from app.models import User, Category
 
 WEREAD_CATEGORIES = [
     '文学', '精品小说', '历史', '哲学宗教', '心理', '社会文化',
@@ -13,8 +13,8 @@ OLD_CATEGORIES = ['科幻', '技术', '哲学', '传记', '经济', '社会',
 
 
 def init_db():
-    if not Admin.query.first():
-        admin = Admin(username='admin')
+    if not User.query.first():
+        admin = User(username='admin', email='admin@book.com')
         admin.set_password('admin123')
         db.session.add(admin)
 
@@ -48,17 +48,24 @@ def remove_old_categories():
 from app.models import Book
 
 
-def import_all_highlights():
+def import_all_highlights(user_id=None):
     from app.weread.importer import import_highlights_for_book
-    books = Book.query.filter(Book.weread_book_id.isnot(None),
-                              Book.weread_book_id != '').all()
+    from app.models import User
+    if user_id:
+        books = Book.query.filter(Book.user_id == user_id,
+                                  Book.weread_book_id.isnot(None),
+                                  Book.weread_book_id != '').all()
+    else:
+        books = Book.query.filter(Book.weread_book_id.isnot(None),
+                                  Book.weread_book_id != '').all()
     total = len(books)
     imported_total = 0
     errors = 0
     for i, book in enumerate(books, 1):
+        uid = book.user_id
         print(f'[{i}/{total}] {book.title}...', end=' ')
         try:
-            result = import_highlights_for_book(book)
+            result = import_highlights_for_book(book, uid)
             imported_total += result['imported']
             print(f"{result['imported']}/{result['total']} 条")
         except Exception as e:
