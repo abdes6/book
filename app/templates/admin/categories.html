@@ -1,20 +1,40 @@
 {% extends 'admin/base.html' %}
 {% block title %}分类管理{% endblock %}
 {% block content %}
-<h4>分类管理</h4>
-<form method="post" class="row g-2 mb-4">
+<div class="page-title">分类管理</div>
+
+<form method="post" class="row g-2 mb-3 align-items-end">
     {{ form.hidden_tag() }}
-    <div class="col-auto">{{ form.name(class="form-control", placeholder="新分类") }}</div>
-    <div class="col-auto">{{ form.submit(class="btn btn-primary") }}</div>
+    <div class="col-auto">
+        {{ form.name(class="input-custom", placeholder="输入新分类名称") }}
+    </div>
+    <div class="col-auto">
+        {{ form.submit(class="btn-primary-custom border-0") }}
+    </div>
 </form>
-<table class="table">
-    <tr><th>ID</th><th>名称</th><th>书籍数</th><th>操作</th></tr>
-    {% for c in categories %}
-    <tr><td>{{ c.id }}</td><td>{{ c.name }}</td><td>{{ c.books.count() }}</td>
-        <td><form method="post" action="{{ url_for('admin.category_delete', id=c.id) }}" style="display:inline" onsubmit="return confirm('确定？')"><button class="btn btn-sm btn-danger">删除</button></form></td>
-    </tr>
-    {% else %}
-    <tr><td colspan="4">暂无分类</td></tr>
-    {% endfor %}
-</table>
+
+<div class="data-card">
+    <table class="admin-table">
+        <thead>
+            <tr><th style="width:60px;">ID</th><th>名称</th><th style="width:80px;">书籍数</th><th style="width:80px;">操作</th></tr>
+        </thead>
+        <tbody>
+            {% for c in categories %}
+            <tr>
+                <td style="color:var(--ink-light);font-size:0.78rem;">{{ c.id }}</td>
+                <td style="font-weight:500;">{{ c.name }}</td>
+                <td class="td-count">{{ c.books.count() }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('admin.category_delete', id=c.id) }}" onsubmit="return confirm('确定删除分类「{{ c.name }}」？')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn-outline-danger-custom">删除</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center py-4" style="color:var(--ink-light);">暂无分类</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

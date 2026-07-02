@@ -21,18 +21,30 @@
         <div class="collapse navbar-collapse" id="nb">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('main.book_') %} active{% endif %}" href="{{ url_for('main.book_list') }}">全部藏书</a></li>
-                <li class="nav-item"><a class="nav-link{% if request.endpoint == 'main.stats' %} active{% endif %}" href="{{ url_for('main.stats') }}">阅读统计</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint == 'main.highlight_search' %} active{% endif %}" href="{{ url_for('main.highlight_search') }}" title="搜索划线笔记">划线搜索</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('ai_reader.') %} active{% endif %}" href="{{ url_for('ai_reader.index') }}">AI 读书</a></li>
                 <li class="nav-item"><a class="nav-link{% if request.endpoint and request.endpoint.startswith('thinker.') %} active{% endif %}" href="{{ url_for('thinker.list_thinkers') }}">思想家</a></li>
-                <li class="nav-item"><a class="nav-link{% if request.endpoint == 'main.highlight_search' %} active{% endif %}" href="{{ url_for('main.highlight_search') }}" title="搜索划线笔记">划线搜索</a></li>
+                <li class="nav-item"><a class="nav-link{% if request.endpoint == 'main.stats' %} active{% endif %}" href="{{ url_for('main.stats') }}">阅读统计</a></li>
             </ul>
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item me-2">
                     <button id="theme-toggle" class="btn btn-sm btn-outline-light border-0" title="切换主题" style="font-size:1.1rem;">🌓</button>
                 </li>
                 {% if current_user.is_authenticated %}
-                <li class="nav-item"><span class="nav-link text-light">{{ current_user.username }}</span></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">退出</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle user-menu-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        {{ current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}">
+                            <span class="drop-icon">⚙</span>管理后台
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                            <span class="drop-icon">↩</span>退出登录
+                        </a></li>
+                    </ul>
+                </li>
                 {% endif %}
             </ul>
             <form class="d-flex" action="{{ url_for('main.book_list') }}" method="GET">

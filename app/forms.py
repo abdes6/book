@@ -13,14 +13,10 @@ class LoginForm(FlaskForm):
 class BookForm(FlaskForm):
     title = StringField('书名', validators=[DataRequired(), Length(1, 200)])
     author = StringField('作者', validators=[Length(0, 100)])
-    isbn = StringField('ISBN', validators=[Length(0, 20)])
     cover_url = StringField('封面URL', validators=[Length(0, 500)])
-    summary = TextAreaField('简介')
-    rating = DecimalField('评分', validators=[Optional(), NumberRange(0, 5)], places=1)
     status = SelectField('阅读状态', choices=[
         ('reading', '在读'), ('done', '读完')
     ])
-    notes = TextAreaField('读后感')
     category_id = SelectField('分类', coerce=int, validators=[Optional()])
     submit = SubmitField('保存')
 

@@ -1,7 +1,25 @@
+"""
+AI 阅读助手 — Prompt 模板与服务层
+--------------------------------
+为每本书提供五种 AI 能力：对话、摘要、书评、分析、推荐。
+
+调用链路：
+  routes.py → service.py → DeepSeek API（通过 app.ai_utils.get_client()）
+
+设计要点：
+- 不同任务使用不同的 temperature（创造性越强温度越高）
+- 对话和开场白使用 ===OPTIONS=== 协议提供追问选项
+- 推荐功能每次实时生成（不缓存），因为阅读历史持续变化
+- 摘要/书评/分析缓存到 BookAIContent 表
+"""
+
 import re
 from flask import current_app
 from app.ai_utils import get_client, parse_reply, generate_options, FORMAT_RULE
 
+
+# ── Prompt 模板 ─────────────────────────────────────────────────────
+# 每类任务有独立的 System Prompt 模板，使用 {title}, {author} 等占位符
 
 PROMPTS = {
     'chat': '你是一位专业的读书助手。我正在阅读《{title}》(作者: {author})。\n'
@@ -26,11 +44,18 @@ PROMPTS = {
                '书籍简介：{summary}\n\n{FMT}',
 }
 
+# ── 参数配置 ────────────────────────────────────────────────────────
+# 不同任务有不同的 temperature 和 max_tokens
+# temperature 越低越确定（适合摘要），越高越有创意（适合推荐）
+
 TEMPS = {'chat': 0.7, 'summary': 0.3, 'review': 0.5, 'analysis': 0.4, 'recommend': 0.6, 'opening': 0.7}
 MAX_TOKENS = {'chat': 2048, 'summary': 1024, 'review': 1536, 'analysis': 2048, 'recommend': 1024, 'opening': 512}
 
 
+# ── 内部辅助 ────────────────────────────────────────────────────────
+
 def _call_ai(prompt, temp=0.7, max_tokens=2048):
+    """单轮 AI 调用：发送 prompt，返回纯文本回复。"""
     resp = get_client().chat.completions.create(
         model=current_app.config['DEEPSEEK_MODEL'],
         messages=[{'role': 'user', 'content': prompt}],
@@ -40,6 +65,7 @@ def _call_ai(prompt, temp=0.7, max_tokens=2048):
 
 
 def _build_context(book, highlights_text=''):
+    """从 Book 对象构建 prompt 占位符字典。"""
     return {
         'title': book.title or '',
         'author': book.author or '未知',
@@ -48,7 +74,13 @@ def _build_context(book, highlights_text=''):
     }
 
 
+# ── 公开接口 ────────────────────────────────────────────────────────
+
 def chat_with_book(book, highlights_text, message, history):
+    """
+    与书籍对话：发送用户消息 + 对话历史 + 书籍上下文给 DeepSeek。
+    回复末尾附带 3 个追问选项。
+    """
     ctx = _build_context(book, highlights_text)
     ctx['FMT'] = FORMAT_RULE
     prompt = PROMPTS['chat'].format(**ctx)
@@ -68,21 +100,25 @@ def chat_with_book(book, highlights_text, message, history):
 
 
 def generate_summary(book, highlights_text):
+    """生成书籍摘要（300-500字）。"""
     ctx = _build_context(book, highlights_text)
     return _call_ai(PROMPTS['summary'].format(**ctx), TEMPS['summary'], MAX_TOKENS['summary'])
 
 
 def generate_review(book, highlights_text):
+    """生成书评（200-400字）。"""
     ctx = _build_context(book, highlights_text)
     return _call_ai(PROMPTS['review'].format(**ctx), TEMPS['review'], MAX_TOKENS['review'])
 
 
 def generate_analysis(book, highlights_text):
+    """分析划线笔记：提炼核心观点、金句和逻辑关系。"""
     ctx = _build_context(book, highlights_text)
     return _call_ai(PROMPTS['analysis'].format(**ctx), TEMPS['analysis'], MAX_TOKENS['analysis'])
 
 
 def generate_recommendations(book, read_history_text):
+    """基于当前书籍和阅读历史推荐 5 本类似的书。"""
     ctx = {'title': book.title or '', 'author': book.author or '未知', 'read_history': read_history_text}
     text = _call_ai(PROMPTS['recommend'].format(**ctx), TEMPS['recommend'], MAX_TOKENS['recommend'])
     recommendations = []
@@ -98,6 +134,7 @@ def generate_recommendations(book, read_history_text):
 
 
 def generate_opening(book):
+    """生成对话开场白（50-80字欢迎语）。"""
     ctx = {'title': book.title or '', 'author': book.author or '未知', 'summary': book.summary or '暂无简介', 'FMT': FORMAT_RULE}
     raw = _call_ai(PROMPTS['opening'].format(**ctx), TEMPS['opening'], MAX_TOKENS['opening'])
     reply, options = parse_reply(raw)
