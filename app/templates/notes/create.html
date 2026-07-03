@@ -20,12 +20,12 @@
             </div>
             <div class="mb-3">
                 {{ form.content.label(class='form-label') }}
-                {{ form.content(class='form-control', rows=20, placeholder='支持 Markdown 语法...', id='note-editor') }}
+                {{ form.content(class='form-control', rows=20, placeholder='支持 Markdown 语法...') }}
             </div>
             <div class="mb-3">
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="form-label mb-0">附图</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('image-input').click()">+ 上传</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="event.preventDefault();document.getElementById('image-input').click();return false">+ 上传</button>
                     <input type="file" id="image-input" accept="image/*" style="display:none">
                     <small class="text-muted">拖拽图片右下角可自由缩放</small>
                 </div>
@@ -44,6 +44,8 @@ var images = [];
 var observer;
 
 document.getElementById('image-input').addEventListener('change', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     var file = e.target.files[0];
     if (!file) return;
     var formData = new FormData();
@@ -57,7 +59,7 @@ document.getElementById('image-input').addEventListener('change', function(e) {
             syncHidden();
         }
     })
-    .catch(function() { alert('上传失败'); });
+    .catch(function(err) { alert('上传失败: ' + (err.message || err)); });
     e.target.value = '';
 });
 
@@ -65,12 +67,13 @@ function renderOneImage(i) {
     var img = images[i];
     var div = document.getElementById('image-preview');
     var wrap = document.createElement('div');
-    wrap.className = 'card';
+    wrap.className = 'card note-img-card';
     wrap.style.overflow = 'auto';
     wrap.style.resize = 'horizontal';
     wrap.style.width = img.width + 'px';
     wrap.style.maxWidth = '100%';
     wrap.style.minWidth = '100px';
+    wrap.style.minHeight = '60px';
     wrap.dataset.imgIdx = i;
     wrap.innerHTML =
         '<img src="' + img.url + '" style="width:100%;height:auto;display:block" class="card-img-top rounded-0" draggable="false">'

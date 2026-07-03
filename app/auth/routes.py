@@ -1,5 +1,5 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, url_for, flash, request, session, send_file
+from flask import render_template, redirect, url_for, flash, request, session, send_file, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.auth import bp
 from app.forms import UserLoginForm, RegisterForm
@@ -35,9 +35,11 @@ def login():
             # 每次登录都后台导入全部未导入的划线
             from app.weread.importer import import_all_highlights_for_user
             import threading
+            app = current_app._get_current_object()
             t = threading.Thread(
-                target=import_all_highlights_for_user,
-                args=(user.id,), kwargs={'api_key': user.weread_api_key},
+                target=lambda uid=user.id, key=user.weread_api_key: (
+                    app.app_context().__enter__(), import_all_highlights_for_user(uid, api_key=key)
+                )[-1],
                 daemon=True
             )
             t.start()
@@ -63,8 +65,16 @@ def update_key():
         if not current_user.shelf_synced:
             from app.weread.importer import import_shelf_to_db, import_all_highlights_for_user
             import_shelf_to_db(current_user.id)
-            import_all_highlights_for_user(current_user.id)
             current_user.shelf_synced = True
+            import threading
+            app = current_app._get_current_object()
+            t = threading.Thread(
+                target=lambda uid=current_user.id, k=key: (
+                    app.app_context().__enter__(), import_all_highlights_for_user(uid, api_key=k)
+                )[-1],
+                daemon=True
+            )
+            t.start()
         db.session.commit()
         flash('API Key 已保存，书架已同步', 'success')
         return redirect(url_for('main.index'))
@@ -107,9 +117,11 @@ def register():
         flash('注册成功，书架同步完成，划线正在后台导入...', 'success')
         # 划线导入在后台线程执行，避免阻塞注册请求
         import threading
+        app = current_app._get_current_object()
         t = threading.Thread(
-            target=import_all_highlights_for_user,
-            args=(user.id,), kwargs={'api_key': form.weread_api_key.data},
+            target=lambda uid=user.id, key=form.weread_api_key.data: (
+                app.app_context().__enter__(), import_all_highlights_for_user(uid, api_key=key)
+            )[-1],
             daemon=True
         )
         t.start()

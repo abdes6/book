@@ -112,7 +112,7 @@ def note_edit(id):
         for img_id in json.loads(request.form.get('removed_image_ids', '[]')):
             img = NoteImage.query.get(img_id)
             if img and img.note_id == note.id:
-                file_path = os.path.join(current_app.root_path, 'static', img.stored_path)
+                file_path = os.path.join(current_app.root_path, img.stored_path)
                 if os.path.exists(file_path):
                     os.remove(file_path)
                 db.session.delete(img)
@@ -136,6 +136,7 @@ def note_edit(id):
 
 
 @bp.route('/<int:id>/delete', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def note_delete(id):
     note = Note.query.get_or_404(id)
@@ -145,7 +146,7 @@ def note_delete(id):
     book_id = note.book_id
     images = NoteImage.query.filter_by(note_id=note.id).all()
     for img in images:
-        file_path = os.path.join(current_app.root_path, 'static', img.stored_path)
+        file_path = os.path.join(current_app.root_path, img.stored_path)
         if os.path.exists(file_path):
             os.remove(file_path)
         db.session.delete(img)
@@ -197,7 +198,7 @@ def upload_image():
         return jsonify({'error': '文件大小不能超过 5MB'}), 400
     file.seek(0)
 
-    upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'notes')
+    upload_dir = os.path.join(current_app.root_path, 'uploads', 'notes')
     os.makedirs(upload_dir, exist_ok=True)
 
     ext = file.filename.rsplit('.', 1)[1].lower()
@@ -205,9 +206,17 @@ def upload_image():
     save_path = os.path.join(upload_dir, new_name)
     file.save(save_path)
 
-    url = url_for('static', filename=f'uploads/notes/{new_name}')
+    url = url_for('notes.uploaded_file', filename=new_name)
     return jsonify({
         'url': url,
         'stored_path': f'uploads/notes/{new_name}',
         'original_name': secure_filename(file.filename),
     })
+
+
+@bp.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """提供上传笔记图片，目录在 static/ 外部避免文件监听触发刷新。"""
+    from flask import send_from_directory
+    upload_dir = os.path.join(current_app.root_path, 'uploads', 'notes')
+    return send_from_directory(upload_dir, filename)
