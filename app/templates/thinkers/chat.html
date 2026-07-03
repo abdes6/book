@@ -252,7 +252,7 @@ function deleteConv(id) {
         if (el) el.remove();
         var opt = document.querySelector('#conv-selector option[value="' + id + '"]');
         if (opt) opt.remove();
-        if (currentConversationId === id) startNewChat();
+        if (currentConversationId === id) location.href = '{{ url_for("thinker.list_thinkers") }}';
     });
 }
 
