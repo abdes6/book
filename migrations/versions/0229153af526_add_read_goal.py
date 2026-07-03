@@ -1,4 +1,4 @@
-"""add read_goal
+"""阅读目标 — 创建 read_goal 表，支持年度/月度目标
 
 Revision ID: 0229153af526
 Revises: 132358c2be1a

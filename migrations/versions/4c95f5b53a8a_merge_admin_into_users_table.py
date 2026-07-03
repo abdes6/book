@@ -1,4 +1,4 @@
-"""merge admin into users table
+"""合并管理员 — Admin 模型并入 User 模型
 
 Revision ID: 4c95f5b53a8a
 Revises: fe15f096a5de

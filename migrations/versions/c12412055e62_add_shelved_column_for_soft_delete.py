@@ -1,4 +1,4 @@
-"""add_shelved_column_for_soft_delete
+"""书架软删除 — books 表添加 shelved 字段，下架书不物理删除
 
 Revision ID: c12412055e62
 Revises: 8cefe4d3087d

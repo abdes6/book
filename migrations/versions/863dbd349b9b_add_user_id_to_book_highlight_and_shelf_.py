@@ -1,4 +1,4 @@
-"""add user_id to book, highlight, and shelf_synced to user
+"""多租户数据隔离 — books/highlights 表添加 user_id 外键
 
 Revision ID: 863dbd349b9b
 Revises: 27f87824869d

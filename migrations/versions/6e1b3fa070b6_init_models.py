@@ -1,9 +1,13 @@
-"""init models
+"""初始建表 — 创建 admins、categories、books 三张基础表
+
+数据库首次初始化，建立核心表结构：
+- admins: 管理员用户（后被 users 表取代）
+- categories: 图书分类
+- books: 图书信息（含 weread_book_id 微信读书去重键）
 
 Revision ID: 6e1b3fa070b6
-Revises: 
+Revises:
 Create Date: 2026-06-29 09:24:49.511598
-
 """
 from alembic import op
 import sqlalchemy as sa

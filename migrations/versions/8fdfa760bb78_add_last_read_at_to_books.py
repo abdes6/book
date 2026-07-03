@@ -1,4 +1,4 @@
-"""add_last_read_at_to_books
+"""添加最近阅读时间 — books 表添加 last_read_at 字段
 
 Revision ID: 8fdfa760bb78
 Revises: 61af57676bcc

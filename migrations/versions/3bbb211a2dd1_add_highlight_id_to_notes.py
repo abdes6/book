@@ -1,4 +1,4 @@
-"""add_highlight_id_to_notes
+"""笔记关联划线 — notes 表添加 highlight_id 外键
 
 Revision ID: 3bbb211a2dd1
 Revises: 8fdfa760bb78

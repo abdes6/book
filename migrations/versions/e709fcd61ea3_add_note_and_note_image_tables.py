@@ -1,4 +1,4 @@
-"""add note and note_image tables
+"""笔记系统 — 创建 notes 和 note_images 表
 
 Revision ID: e709fcd61ea3
 Revises: fa7025faea0e

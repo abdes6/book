@@ -1,4 +1,4 @@
-"""add_missing_indexes_and_cascade
+"""性能优化 — 补充数据库索引和外键级联删除
 
 Revision ID: 8cefe4d3087d
 Revises: ebfa50748674

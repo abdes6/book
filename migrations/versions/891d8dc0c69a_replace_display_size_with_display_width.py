@@ -1,4 +1,4 @@
-"""replace display_size with display_width
+"""笔记图片宽度 — 将 display_size 改为 display_width
 
 Revision ID: 891d8dc0c69a
 Revises: 22ef1b2cb267

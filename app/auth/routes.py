@@ -1,3 +1,24 @@
+"""
+认证路由模块 — 登录/注册/验证码/API Key 管理
+----------------------------------------------
+登录流程：
+  1. 表单验证 → 查询用户 → 密码校验
+  2. login_user() 建立 session
+  3. 首次登录触发 import_shelf_to_db() 全量导入书架
+  4. 后台线程启动 import_all_highlights_for_user() 批量导入划线
+
+注册流程：
+  1. 验证码校验 (session['captcha'] vs form.captcha)
+  2. 创建 User → import_shelf_to_db() 导入书架
+  3. login_user() → 后台线程导入全部划线
+  4. 划线导入在后台线程执行，避免阻塞注册请求
+
+安全措施：
+  - @rate_limit 频率限制（防暴力破解）
+  - _is_safe_url() 防 Open Redirect 攻击
+  - session.pop('captcha') 验证码一次性使用
+"""
+
 from urllib.parse import urlparse, urljoin
 from flask import render_template, redirect, url_for, flash, request, session, send_file, current_app
 from flask_login import login_user, logout_user, login_required, current_user

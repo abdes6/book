@@ -1,4 +1,4 @@
-"""add display_size to note_image
+"""笔记图片尺寸 — note_images 表添加 display_size 字段
 
 Revision ID: 22ef1b2cb267
 Revises: e709fcd61ea3

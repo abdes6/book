@@ -1,4 +1,4 @@
-"""add book_chat and book_ai_content
+"""AI 阅读助手 — 创建 book_chat 和 book_ai_content 表
 
 Revision ID: fe15f096a5de
 Revises: e1ee992eb795

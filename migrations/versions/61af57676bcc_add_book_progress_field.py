@@ -1,4 +1,4 @@
-"""add_book_progress_field
+"""添加阅读进度 — books 表添加 progress 字段(0-100)
 
 Revision ID: 61af57676bcc
 Revises: c12412055e62

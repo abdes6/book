@@ -1,4 +1,4 @@
-"""add thinker opening_line
+"""哲学家开场白 — thinker 表添加 opening_line 字段
 
 Revision ID: e48938ba86dd
 Revises: e06662e5dc45

@@ -1,4 +1,4 @@
-"""add last_viewed_at
+"""添加本地查看时间 — books 表添加 last_viewed_at 字段
 
 Revision ID: fa7025faea0e
 Revises: 6a0e3ad145dc

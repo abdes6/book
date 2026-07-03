@@ -1,4 +1,4 @@
-"""add highlights
+"""添加划线笔记表 — highlights 表，支持微信读书划线导入
 
 Revision ID: c5004a3ee73c
 Revises: 6e1b3fa070b6

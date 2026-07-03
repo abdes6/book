@@ -1,4 +1,4 @@
-"""add users table
+"""添加用户表 — users 表，支持多用户注册登录
 
 Revision ID: 6a0e3ad145dc
 Revises: c5004a3ee73c

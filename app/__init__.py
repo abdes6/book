@@ -70,7 +70,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     csrf.init_app(app)
 
-    login_manager.login_view = 'admin.login'  # 未登录用户重定向到后台登录
+    login_manager.login_view = 'auth.login'  # 未登录用户重定向到前端登录
 
     # ── Blueprint 注册 ──
     from app.main import bp as main_bp

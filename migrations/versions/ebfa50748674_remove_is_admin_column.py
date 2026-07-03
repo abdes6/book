@@ -1,4 +1,4 @@
-"""remove is_admin column
+"""移除 is_admin 标志 — 统一权限模型，管理员=首用户
 
 Revision ID: ebfa50748674
 Revises: 4c95f5b53a8a

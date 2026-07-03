@@ -1,39 +1,16 @@
-from flask import render_template, redirect, url_for, flash, request, session, send_file
-from flask_login import login_user, logout_user, login_required, current_user
+from flask import render_template, redirect, url_for, flash, request, session
+from flask_login import logout_user, login_required, current_user
 from app.admin import bp
-from app.admin.captcha import generate_captcha
-from app.forms import LoginForm, BookForm, CategoryForm
+from app.forms import BookForm, CategoryForm
 from app.models import User, Book, Category, db
-
-
-@bp.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        if form.captcha.data.upper() != session.get('captcha', ''):
-            flash('验证码错误', 'danger')
-            return render_template('admin/login.html', form=form)
-        admin = User.query.filter_by(username=form.username.data).first()
-        if admin and admin.check_password(form.password.data):
-            login_user(admin)
-            session.pop('captcha', None)
-            return redirect(url_for('admin.dashboard'))
-        flash('用户名或密码错误', 'danger')
-    return render_template('admin/login.html', form=form)
-
-
-@bp.route('/captcha')
-def captcha():
-    code, buf = generate_captcha()
-    session['captcha'] = code
-    return send_file(buf, mimetype='image/png')
 
 
 @bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('admin.login'))
+    session.clear()
+    return redirect('/auth/login')
 
 
 @bp.route('/')

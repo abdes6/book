@@ -1,4 +1,4 @@
-"""add thinker and conversation
+"""AI 哲学家对话 — 创建 thinker 和 conversation 表
 
 Revision ID: e06662e5dc45
 Revises: 863dbd349b9b

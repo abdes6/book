@@ -1,4 +1,4 @@
-"""add read_stat and daily_read_stat
+"""阅读统计系统 — 创建 read_stat 和 daily_read_stat 表
 
 Revision ID: 132358c2be1a
 Revises: 891d8dc0c69a

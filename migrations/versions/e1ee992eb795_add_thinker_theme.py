@@ -1,4 +1,4 @@
-"""add thinker theme
+"""哲学家主题色 — thinker 表添加 theme 字段
 
 Revision ID: e1ee992eb795
 Revises: e48938ba86dd

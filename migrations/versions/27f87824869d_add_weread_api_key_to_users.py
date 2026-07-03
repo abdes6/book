@@ -1,4 +1,4 @@
-"""add weread_api_key to users
+"""用户 API Key — users 表添加 weread_api_key 字段
 
 Revision ID: 27f87824869d
 Revises: 0229153af526
