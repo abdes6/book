@@ -22,6 +22,15 @@ def login():
                 import_shelf_to_db(user.id)
                 user.shelf_synced = True
                 db.session.commit()
+            # 每次登录都后台导入全部未导入的划线
+            from app.weread.importer import import_all_highlights_for_user
+            import threading
+            t = threading.Thread(
+                target=import_all_highlights_for_user,
+                args=(user.id,), kwargs={'api_key': user.weread_api_key},
+                daemon=True
+            )
+            t.start()
             flash('登录成功', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('main.index'))
@@ -40,8 +49,9 @@ def update_key():
         current_user.weread_api_key = key
         db.session.flush()
         if not current_user.shelf_synced:
-            from app.weread.importer import import_shelf_to_db
+            from app.weread.importer import import_shelf_to_db, import_all_highlights_for_user
             import_shelf_to_db(current_user.id)
+            import_all_highlights_for_user(current_user.id)
             current_user.shelf_synced = True
         db.session.commit()
         flash('API Key 已保存，书架已同步', 'success')
@@ -66,12 +76,20 @@ def register():
         user.weread_api_key = form.weread_api_key.data
         db.session.add(user)
         db.session.flush()
-        from app.weread.importer import import_shelf_to_db
+        from app.weread.importer import import_shelf_to_db, import_all_highlights_for_user
         import_shelf_to_db(user.id, api_key=form.weread_api_key.data)
         user.shelf_synced = True
         db.session.commit()
         login_user(user)
-        flash('注册成功，欢迎！', 'success')
+        flash('注册成功，书架同步完成，划线正在后台导入...', 'success')
+        # 划线导入在后台线程执行，避免阻塞注册请求
+        import threading
+        t = threading.Thread(
+            target=import_all_highlights_for_user,
+            args=(user.id,), kwargs={'api_key': form.weread_api_key.data},
+            daemon=True
+        )
+        t.start()
         return redirect(url_for('main.index'))
     return render_template('auth/register.html', form=form)
 

@@ -263,10 +263,37 @@ def categorize_all_books():
     return {'categorized': total_matched, 'skipped': total_skipped}
 
 
-def import_highlights_for_book(book, user_id):
+def import_all_highlights_for_user(user_id, api_key=None):
+    """
+    批量导入：为用户所有未导入划线的书籍批量导入微信读书划线。
+    使用 ~Book.highlights.any() 跳过已有划线的书籍，避免重复 API 调用。
+    api_key 用于无请求上下文的场景（如注册时），为空则从 current_user 获取。
+    返回 {imported: N, books_processed: M}。
+    """
+    books_to_import = Book.query.filter(
+        Book.user_id == user_id,
+        Book.weread_book_id.isnot(None),
+        Book.weread_book_id != '',
+        ~Book.highlights.any()
+    ).all()
+
+    imported_total = 0
+    for i, book in enumerate(books_to_import):
+        try:
+            result = import_highlights_for_book(book, user_id, api_key=api_key)
+            imported_total += result['imported']
+        except Exception:
+            db.session.rollback()
+            continue
+
+    return {'imported': imported_total, 'books_processed': len(books_to_import)}
+
+
+def import_highlights_for_book(book, user_id, api_key=None):
     """
     按需导入：为指定书籍导入微信读书划线笔记。
     首次访问书籍详情页时触发，weread_bookmark_id 用于去重。
+    api_key 用于无请求上下文的场景（如注册时），为空则从 current_user 获取。
     返回 {imported: N, total: M}。
     """
     if not book.weread_book_id:
@@ -274,9 +301,9 @@ def import_highlights_for_book(book, user_id):
 
     # 获取已存在的 bookmark_id 集合，用于去重
     existing_ids = {h.weread_bookmark_id for h in Highlight.query.with_entities(
-        Highlight.weread_bookmark_id).filter_by(book_id=book.id).all()}
+        Highlight.weread_bookmark_id).filter_by(book_id=book.id, user_id=user_id).all()}
 
-    data = get_bookmarklist(book.weread_book_id)
+    data = get_bookmarklist(book.weread_book_id, api_key=api_key)
 
     # 构建章节映射：chapterUid → 章节标题
     chapters_map = {}

@@ -120,8 +120,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
-    weread_api_key = db.Column(db.String(200), default='', nullable=True)
-    shelf_synced = db.Column(db.Boolean, default=False)  # 书架是否已首次导入
+    weread_api_key = db.Column(db.String(500), default='', nullable=True)
+    shelf_synced = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         """使用 Werkzeug 哈希存储密码，不存明文。"""

@@ -70,13 +70,13 @@ def get_shelf(api_key=None):
     }, api_key=api_key)
 
 
-def get_bookmarklist(book_id):
+def get_bookmarklist(book_id, api_key=None):
     """获取指定书籍的全部划线笔记（按章节组织）。"""
     return _post({
         'api_name': '/book/bookmarklist',
         'bookId': str(book_id),
         'skill_version': SKILL_VERSION
-    })
+    }, api_key=api_key)
 
 
 def get_book_info(book_id):
