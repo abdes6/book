@@ -65,6 +65,7 @@ document.getElementById('image-input').addEventListener('change', function(e) {
         }
     })
     .catch(function() { alert('上传失败'); });
+    e.target.value = '';
 });
 
 function startObserve(el, callback) {

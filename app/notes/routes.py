@@ -6,7 +6,7 @@ from urllib.parse import quote
 from flask import render_template, redirect, url_for, flash, request, jsonify, current_app, Response, abort
 from flask_login import current_user
 from werkzeug.utils import secure_filename
-from app.extensions import frontend_login_required
+from app.extensions import csrf, frontend_login_required
 from app.notes import bp
 from app.notes.forms import NoteForm
 from app.models import db, Book, Note, NoteImage, Highlight
@@ -183,6 +183,7 @@ def export_pdf(id):
 
 
 @bp.route('/upload-image', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def upload_image():
     if 'image' not in request.files:

@@ -53,56 +53,53 @@ document.getElementById('image-input').addEventListener('change', function(e) {
     .then(function(data) {
         if (data.url) {
             images.push({url: data.url, path: data.stored_path, name: data.original_name, width: 250});
-            renderPreview();
+            renderOneImage(images.length - 1);
+            syncHidden();
         }
     })
     .catch(function() { alert('上传失败'); });
+    e.target.value = '';
 });
 
-function startObserve(el, idx) {
-    if (!observer) {
-        observer = new ResizeObserver(function(entries) {
-            for (var entry of entries) {
-                var i = parseInt(entry.target.dataset.imgIdx);
-                if (images[i]) {
-                    images[i].width = entry.target.offsetWidth;
-                    syncHidden();
-                }
-            }
-        });
-    }
-    observer.observe(el);
+function renderOneImage(i) {
+    var img = images[i];
+    var div = document.getElementById('image-preview');
+    var wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.style.overflow = 'auto';
+    wrap.style.resize = 'horizontal';
+    wrap.style.width = img.width + 'px';
+    wrap.style.maxWidth = '100%';
+    wrap.style.minWidth = '100px';
+    wrap.dataset.imgIdx = i;
+    wrap.innerHTML =
+        '<img src="' + img.url + '" style="width:100%;height:auto;display:block" class="card-img-top rounded-0" draggable="false">'
+        + '<div class="card-body p-2 d-flex justify-content-between align-items-center">'
+        + '<small class="text-muted width-label">' + img.width + 'px</small>'
+        + '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage(' + i + ', this.parentElement.parentElement)">删除</button>'
+        + '</div>';
+    div.appendChild(wrap);
+
+    var obs = new ResizeObserver(function() {
+        img.width = wrap.offsetWidth;
+        wrap.querySelector('.width-label').textContent = wrap.offsetWidth + 'px';
+        syncHidden();
+    });
+    obs.observe(wrap);
+    wrap._resizeObserver = obs;
 }
 
-function renderPreview() {
-    var div = document.getElementById('image-preview');
-    div.innerHTML = '';
-    if (observer) observer.disconnect();
-    observer = null;
-    images.forEach(function(img, i) {
-        var wrap = document.createElement('div');
-        wrap.className = 'card';
-        wrap.style.overflow = 'auto';
-        wrap.style.resize = 'horizontal';
-        wrap.style.width = img.width + 'px';
-        wrap.style.maxWidth = '100%';
-        wrap.style.minWidth = '100px';
-        wrap.dataset.imgIdx = i;
-        wrap.innerHTML =
-            '<img src="' + img.url + '" style="width:100%;height:auto;display:block" class="card-img-top rounded-0" draggable="false">'
-            + '<div class="card-body p-2 d-flex justify-content-between align-items-center">'
-            + '<small class="text-muted">' + img.width + 'px</small>'
-            + '<button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage(' + i + ')">删除</button>'
-            + '</div>';
-        div.appendChild(wrap);
-        startObserve(wrap, i);
+function removeImage(idx, el) {
+    if (el._resizeObserver) el._resizeObserver.disconnect();
+    el.remove();
+    images.splice(idx, 1);
+    // Re-index remaining elements
+    var preview = document.getElementById('image-preview');
+    Array.from(preview.children).forEach(function(c, i) {
+        c.dataset.imgIdx = i;
+        c.querySelector('button').setAttribute('onclick', 'removeImage(' + i + ', this.parentElement.parentElement)');
     });
     syncHidden();
-}
-
-function removeImage(idx) {
-    images.splice(idx, 1);
-    renderPreview();
 }
 
 function syncHidden() {
