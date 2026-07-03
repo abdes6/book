@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import current_app, jsonify, request, render_template
 from flask_login import current_user
 from app.ai_utils import get_client, parse_reply, generate_options, FORMAT_RULE
-from app.extensions import db, frontend_login_required
+from app.extensions import csrf, db, frontend_login_required
 from app.thinker import bp
 from app.models import Thinker, Conversation
 
@@ -81,6 +81,7 @@ def chat(slug):
 
 
 @bp.route('/thinkers/<slug>/new', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def new_conversation(slug):
     thinker = Thinker.query.filter_by(slug=slug).first_or_404()
@@ -101,6 +102,7 @@ def new_conversation(slug):
 
 
 @bp.route('/thinkers/<slug>/chat', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def send_message(slug):
     thinker = Thinker.query.filter_by(slug=slug).first_or_404()
@@ -169,6 +171,7 @@ def get_conversation(id):
 
 
 @bp.route('/thinkers/conversation/<int:id>/delete', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def delete_conversation(id):
     user_id = current_user.safe_id
@@ -179,6 +182,7 @@ def delete_conversation(id):
 
 
 @bp.route('/thinkers/conversation/<int:id>/rename', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def rename_conversation(id):
     user_id = current_user.safe_id

@@ -5,7 +5,7 @@ from flask_login import current_user
 from app.ai_reader import bp
 from app.ai_reader.service import chat_with_book, generate_summary, generate_review, generate_analysis, generate_recommendations, generate_opening
 from app.ai_utils import generate_options
-from app.extensions import db, frontend_login_required
+from app.extensions import csrf, db, frontend_login_required
 from app.models import Book, BookChat, BookAIContent, Highlight
 from app.weread.importer import sync_shelf_for_user
 
@@ -75,6 +75,7 @@ def get_chat(book_id):
 
 
 @bp.route('/<int:book_id>/chat', methods=['POST'])
+@csrf.exempt
 @frontend_login_required
 def send_message(book_id):
     user_id = current_user.safe_id
