@@ -5,8 +5,9 @@ Flask 扩展模块
 采用"创建-初始化"模式：先创建未绑定实例，在 create_app() 中调用 init_app()。
 """
 
-from functools import wraps
-from flask import redirect, url_for
+import time
+import functools
+from flask import redirect, url_for, request, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
@@ -19,12 +20,41 @@ migrate = Migrate()         # Alembic 数据库迁移
 csrf = CSRFProtect()        # CSRF 跨站请求伪造防护
 
 
+# ── 简易频率限制 ────────────────────────────────────────────────────
+
+_attempts = {}
+
+
+def _rate_limit_check(key, max_attempts=5, window=300):
+    now = time.time()
+    history = _attempts.get(key, [])
+    history = [t for t in history if now - t < window]
+    _attempts[key] = history
+    if len(history) >= max_attempts:
+        return False
+    history.append(now)
+    return True
+
+
+def rate_limit(action, max_attempts=5, window=300):
+    def decorator(f):
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            client_ip = request.remote_addr or 'unknown'
+            key = f'{action}:{client_ip}'
+            if not _rate_limit_check(key, max_attempts, window):
+                flash('操作过于频繁，请稍后再试', 'danger')
+                if request.method == 'POST':
+                    return redirect(request.path)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
 # ── 前端登录装饰器 ──────────────────────────────────────────────────
-# 与 Flask-Login 的 @login_required 不同，此装饰器将未登录用户重定向到
-# 前端登录页 /auth/login，而非后台 /admin/login
 
 def frontend_login_required(f):
-    @wraps(f)
+    @functools.wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))

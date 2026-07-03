@@ -33,6 +33,12 @@
                 {% for e in form.weread_api_key.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
                 <div class="text-muted small mt-1">在 https://open.work.weixin.qq.com 获取</div>
             </div>
+            <div class="mb-3 row g-2">
+                <div class="col-6">{{ form.captcha.label(class="form-label") }}{{ form.captcha(class="form-control", placeholder="验证码") }}{% for e in form.captcha.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}</div>
+                <div class="col-6 d-flex align-items-end">
+                    <img src="{{ url_for('auth.captcha') }}" alt="验证码" style="cursor:pointer;height:38px;" onclick="this.src='{{ url_for('auth.captcha') }}?'+Math.random()">
+                </div>
+            </div>
             {{ form.submit(class="btn btn-primary w-100") }}
         </form>
         <p class="text-center text-muted mt-3 mb-0 small">

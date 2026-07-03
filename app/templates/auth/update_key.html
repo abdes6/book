@@ -9,7 +9,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label class="form-label">微信读书 API Key</label>
-                <input type="text" name="weread_api_key" class="form-control" placeholder="请输入 API Key" required>
+                <input type="password" name="weread_api_key" class="form-control" placeholder="请输入 API Key" required>
                 <div class="text-muted small mt-1">在 https://open.work.weixin.qq.com 获取</div>
             </div>
             <button type="submit" class="btn btn-primary w-100">保存</button>
