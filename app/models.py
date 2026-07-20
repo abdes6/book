@@ -7,7 +7,7 @@ ReadStat / DailyReadStat / ReadGoal 构成阅读统计子系统。
 Thinker / Conversation 构成 AI 哲学家对话子系统。
 
 关键设计决策：
-- 管理员合并到 users 表（首个用户 admin/admin123 即为管理员）
+- 管理员合并到 users 表（首个注册用户即为管理员，密码由 init-db CLI 命令设置）
 - User.get_id() 返回 'u_{id}' 前缀字符串，load_user() 反向解析
 - 书架同步不物理删除，改为 shelved=False 软删除
 - 关联关系使用 cascade='all, delete-orphan' 确保删除 Book 时清理所有子数据
@@ -352,4 +352,38 @@ class BookAIContent(db.Model):
     __table_args__ = (UniqueConstraint('user_id', 'book_id', 'content_type'),)
     user = db.relationship('User', backref=db.backref('ai_contents', lazy='dynamic'))
     book = db.relationship('Book', backref=db.backref('ai_contents', lazy='dynamic',
-                                                      cascade='all, delete-orphan'))
+                                                       cascade='all, delete-orphan'))
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 微信读书想法/点评表
+# ══════════════════════════════════════════════════════════════════════
+
+class Thought(db.Model):
+    """
+    微信读书"想法/点评"数据。包含划线想法、章节点评和整本书评三种类型。
+    weread_review_id 用于去重：同一想法不会重复导入。
+    highlight_id 为可空外键，划线想法通过 range/abstract 匹配到对应 Highlight。
+    """
+    __tablename__ = 'thoughts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False, index=True)
+    highlight_id = db.Column(db.Integer, db.ForeignKey('highlights.id'), nullable=True, index=True)
+    weread_review_id = db.Column(db.String(100), unique=True, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    star = db.Column(db.Integer, default=-1)
+    thought_type = db.Column(db.String(20), default='bookmark')
+    chapter_name = db.Column(db.String(200), default='')
+    is_finish = db.Column(db.Boolean, nullable=True)
+    ref_range = db.Column(db.String(100), default='')
+    ref_abstract = db.Column(db.Text, default='')
+    created_at = db.Column(db.DateTime, nullable=True)
+    imported_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('thoughts', lazy='dynamic'))
+    book = db.relationship('Book', backref=db.backref('thoughts', lazy='dynamic',
+                                                       cascade='all, delete-orphan'))
+    highlight = db.relationship('Highlight', backref=db.backref('thoughts', lazy='dynamic',
+                                                                cascade='all, delete-orphan'))
