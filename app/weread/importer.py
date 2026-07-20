@@ -15,12 +15,15 @@
 - 进度同步：同时提取 readUpdateTime 作为最近阅读时间
 """
 
+import logging
 import time
 from datetime import datetime
 
 from app.extensions import db
-from app.models import Book, Category, Highlight
-from app.weread.api import get_shelf, get_bookmarklist
+from app.models import Book, Category, Highlight, Thought
+from app.weread.api import get_shelf, get_bookmarklist, get_review_list_mine
+
+logger = logging.getLogger(__name__)
 
 # 进程内缓存：避免同一进程短时间内重复调用 API
 _sync_cache = {}
@@ -278,15 +281,18 @@ def import_all_highlights_for_user(user_id, api_key=None):
     ).all()
 
     imported_total = 0
+    thoughts_total = 0
     for i, book in enumerate(books_to_import):
         try:
             result = import_highlights_for_book(book, user_id, api_key=api_key)
             imported_total += result['imported']
+            thoughts_total += result.get('thoughts_imported', 0)
         except Exception:
             db.session.rollback()
             continue
 
-    return {'imported': imported_total, 'books_processed': len(books_to_import)}
+    return {'imported': imported_total, 'thoughts_imported': thoughts_total,
+            'books_processed': len(books_to_import)}
 
 
 def import_highlights_for_book(book, user_id, api_key=None):
@@ -330,5 +336,62 @@ def import_highlights_for_book(book, user_id, api_key=None):
         db.session.add(hl)
         imported += 1
 
+    # ── 导入想法/点评 ──
+    thoughts_imported = 0
+    try:
+        reviews = get_review_list_mine(book.weread_book_id, api_key=api_key)
+        existing_review_ids = {r.weread_review_id for r in Thought.query.with_entities(
+            Thought.weread_review_id).filter_by(book_id=book.id, user_id=user_id).all()}
+
+        local_highlights = Highlight.query.filter_by(book_id=book.id, user_id=user_id).all()
+        range_to_hl = {h.range: h.id for h in local_highlights if h.range}
+
+        for rv in reviews:
+            r = rv.get('review', {})
+            rid = str(r.get('reviewId', ''))
+            if not rid or rid in existing_review_ids:
+                continue
+
+            content = r.get('content', '')
+            if not content:
+                continue
+
+            ref_range = r.get('range', '') or ''
+            ref_abstract = r.get('abstract', '') or ''
+            chapter_name = r.get('chapterName', '') or ''
+            star = r.get('star', -1) or -1
+            is_finish = r.get('isFinish')
+
+            thought_type = 'bookmark' if ref_range else ('chapter' if chapter_name else 'book')
+            highlight_id = None
+            if thought_type == 'bookmark' and ref_range:
+                highlight_id = range_to_hl.get(ref_range)
+            if highlight_id is None and thought_type == 'bookmark' and ref_abstract:
+                for hl in local_highlights:
+                    if hl.mark_text and ref_abstract in hl.mark_text:
+                        highlight_id = hl.id
+                        break
+
+            thought = Thought(
+                user_id=user_id,
+                book_id=book.id,
+                highlight_id=highlight_id,
+                weread_review_id=rid,
+                content=content,
+                star=star,
+                thought_type=thought_type,
+                chapter_name=chapter_name,
+                is_finish=is_finish,
+                ref_range=ref_range,
+                ref_abstract=ref_abstract,
+                created_at=datetime.fromtimestamp(r['createTime']) if r.get('createTime') else None,
+            )
+            db.session.add(thought)
+            thoughts_imported += 1
+
+    except Exception:
+        logger.warning('导入想法失败（非致命）', exc_info=True)
+
     db.session.commit()
-    return {'imported': imported, 'total': len(data.get('updated', []))}
+    return {'imported': imported, 'total': len(data.get('updated', [])),
+            'thoughts_imported': thoughts_imported}
