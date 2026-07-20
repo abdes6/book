@@ -100,3 +100,27 @@ def get_readdata(mode='monthly', base_time=0):
         'baseTime': base_time,
         'skill_version': SKILL_VERSION
     })
+
+
+def get_review_list_mine(book_id, api_key=None):
+    """
+    获取指定书籍的个人想法/点评（含分页自动翻页）。
+    返回全部 reviews 列表。
+    """
+    all_reviews = []
+    synckey = 0
+    while True:
+        data = _post({
+            'api_name': '/review/list/mine',
+            'bookid': str(book_id),
+            'count': 100,
+            'synckey': synckey,
+            'skill_version': SKILL_VERSION
+        }, api_key=api_key)
+        if not data:
+            break
+        all_reviews.extend(data.get('reviews', []))
+        if not data.get('hasMore'):
+            break
+        synckey = data.get('synckey', 0)
+    return all_reviews
