@@ -10,7 +10,7 @@ from flask import render_template, jsonify, redirect, url_for, request, current_
 from flask_login import current_user
 from app.main import bp
 from app.extensions import frontend_login_required
-from app.models import Book, Category, Highlight, ReadStat, DailyReadStat, ReadGoal, db
+from app.models import Book, Category, Highlight, Thought, ReadStat, DailyReadStat, ReadGoal, db
 from app.weread.api import get_shelf
 from app.weread.importer import import_highlights_for_book
 from app.weread.stats_sync import sync_all_stats
@@ -353,6 +353,24 @@ def book_highlights(id):
     highlights = Highlight.query.filter_by(book_id=book.id, user_id=current_user.id).order_by(
         Highlight.chapter_uid, Highlight.created_at).all()
 
+    # ── 查询关联的想法 ──
+    thoughts = Thought.query.filter_by(book_id=book.id, user_id=current_user.id).all()
+    hl_thoughts = {}
+    orphan_thoughts = []
+    for t in thoughts:
+        item = {
+            'id': t.id,
+            'content': t.content,
+            'star': t.star,
+            'thought_type': t.thought_type,
+            'chapter_name': t.chapter_name,
+            'created_at': t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else '',
+        }
+        if t.highlight_id:
+            hl_thoughts.setdefault(t.highlight_id, []).append(item)
+        else:
+            orphan_thoughts.append(item)
+
     # 微信读书六种划线颜色映射
     color_map = {0: '#F9F3A7', 1: '#B5D8B5', 2: '#A7C7E7', 3: '#F0C0C0', 4: '#F5C792', 5: '#E8D5B7'}
 
@@ -366,9 +384,10 @@ def book_highlights(id):
             'mark_text': hl.mark_text,
             'color': color_map.get(hl.color_style, color_map[0]),
             'created_at': hl.created_at.strftime('%Y-%m-%d') if hl.created_at else '',
+            'thoughts': hl_thoughts.get(hl.id, []),
         })
 
-    return jsonify({'highlights': list(groups.values())})
+    return jsonify({'highlights': list(groups.values()), 'orphan_thoughts': orphan_thoughts})
 
 
 # ══════════════════════════════════════════════════════════════════════
