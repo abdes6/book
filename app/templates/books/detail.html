@@ -86,9 +86,34 @@ fetch('{{ url_for("main.book_highlights", id=book.id) }}')
                     html += '<a href="' + noteUrl + '" class="btn btn-sm btn-outline-secondary ms-2 flex-shrink-0" title="基于此划线写笔记" style="font-size:0.8rem;">📝</a>';
                     html += '</div>';
                     if (item.created_at) html += '<small class="text-muted">' + item.created_at + '</small>';
+                    // 渲染关联的想法
+                    if (item.thoughts && item.thoughts.length > 0) {
+                        item.thoughts.forEach(function(t) {
+                            html += '<div class="thought-item" style="margin-top:8px;padding:8px 12px;background:#FDFBF7;border-left:3px solid ' + item.color + ';border-radius:4px;">';
+                            html += '<div style="font-size:13px;color:#5D4E37;line-height:1.6;">' + escapeHtml(t.content) + '</div>';
+                            if (t.star > 0) html += '<div style="font-size:12px;color:#C0392B;margin-top:4px;">' + '\u2605'.repeat(t.star) + '</div>';
+                            html += '<div style="font-size:11px;color:#999;margin-top:2px;">\u60F3\u6CD5 \u00B7 ' + t.created_at + '</div>';
+                            html += '</div>';
+                        });
+                    }
                     html += '</div>';
                 });
             });
+            // 渲染无关联的想法
+            if (data.orphan_thoughts && data.orphan_thoughts.length > 0) {
+                html += '<div style="margin-top:24px;"><h4 style="color:#2C3E50;border-bottom:1px solid #E8E0D4;padding-bottom:8px;">\u5176\u4ED6\u60F3\u6CD5</h4>';
+                data.orphan_thoughts.forEach(function(t) {
+                    var typeLabel = t.thought_type === 'chapter' ? '\u7AE0\u8282\u70B9\u8BC4' : (t.thought_type === 'book' ? '\u4E66\u8BC4' : '\u60F3\u6CD5');
+                    html += '<div class="thought-item" style="padding:10px 14px;background:#FDFBF7;border-left:3px solid #C0392B;border-radius:4px;margin-bottom:8px;">';
+                    html += '<div style="font-size:12px;color:#C0392B;margin-bottom:4px;">' + typeLabel + '</div>';
+                    html += '<div style="font-size:13px;color:#5D4E37;line-height:1.6;">' + escapeHtml(t.content) + '</div>';
+                    if (t.chapter_name) html += '<div style="font-size:11px;color:#999;margin-top:4px;">\u7AE0\u8282: ' + escapeHtml(t.chapter_name) + '</div>';
+                    if (t.star > 0) html += '<div style="font-size:12px;color:#C0392B;">\u2605'.repeat(t.star) + '</div>';
+                    html += '<div style="font-size:11px;color:#999;margin-top:2px;">' + t.created_at + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
             document.getElementById('highlight-count').textContent = '(' + total + '条)';
             document.getElementById('highlight-content').innerHTML = html;
             document.getElementById('highlight-content').classList.remove('d-none');

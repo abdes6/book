@@ -1813,3 +1813,18 @@ html {
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+
+/* ── Thought items (highlights → thoughts) ── */
+.thought-item {
+  font-size: 0.85rem;
+  transition: background 0.15s ease;
+}
+.thought-item:hover {
+  background: #F5F0E8 !important;
+}
+[data-bs-theme="dark"] .thought-item {
+  background: #252B32 !important;
+}
+[data-bs-theme="dark"] .thought-item:hover {
+  background: #303840 !important;
+}
