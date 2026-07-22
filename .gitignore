@@ -16,5 +16,6 @@ start.ps1
 .idea/
 *.doc
 app.py
-skills/*
-!skills/frontend-design/
+skills/
+app/uploads/notes/*.png
+其他/
