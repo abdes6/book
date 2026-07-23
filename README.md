@@ -60,44 +60,54 @@
 ### 前置要求
 
 - Python 3.10+
-- MySQL 8.0
-- 微信读书 API Key
-- DeepSeek API Key（[平台注册](https://platform.deepseek.com)）
+- DeepSeek API Key（[平台注册](https://platform.deepseek.com)）— AI 功能需要，不设置不影响核心功能
 
-### 安装步骤
+### 安装步骤（Windows）
 
-```bash
+```powershell
 # 1. 克隆仓库
 git clone https://github.com/abdes6/book.git
 cd book
 
-# 2. 创建虚拟环境
+# 2. 一键安装并启动
+.\setup.ps1
+```
+
+首次运行会自动完成：创建虚拟环境 → 安装依赖 → 生成配置 → 建库 → 启动。
+
+**启动后**：
+1. 打开 `http://localhost:5000`
+2. 注册账号（填写你的微信读书 API Key 即可同步书架）
+3. 默认管理员：`admin` / `changeme`（后台管理用）
+
+### 手动安装（可选）
+
+```bash
+# 1. 创建虚拟环境
 python -m venv venv
 # Windows: venv\Scripts\activate
 # Linux:   source venv/bin/activate
 
-# 3. 安装依赖
+# 2. 安装依赖
 pip install -r requirements.txt
 
-# 4. 创建 .env 配置文件
-# 参考 .env.example 填写以下变量：
-#   SECRET_KEY=<随机字符串>
-#   DATABASE_URL=mysql+pymysql://root:密码@localhost:3306/book_collection
-#   DEEPSEEK_API_KEY=<你的 DeepSeek API Key>
-#   WEREAD_API_KEY=<你的微信读书 API Key>
+# 3. 复制 .env.example 为 .env，填写 DEEPSEEK_API_KEY
+# 默认使用 SQLite（零配置），设置 DATABASE_URL 可切换 MySQL：
+# DATABASE_URL=mysql+pymysql://root:密码@localhost:3306/book_collection
 
-# 5. 创建数据库
-mysql -u root -p -e "CREATE DATABASE book_collection DEFAULT CHARACTER SET utf8mb4"
-
-# 6. 初始化数据库
-flask init-db
-
-# 7. 运行
+# 4. 启动
 python run.py
-
-# 8. 访问 http://localhost:5000
-#    默认管理员：admin / admin123（首次启动后请修改密码）
+# 首次运行自动创建数据库表和种子数据
 ```
+
+### 切换 MySQL（可选）
+
+项目默认使用 SQLite，如需 MySQL：
+
+1. 安装并启动 MySQL 8.0
+2. 创建数据库：`mysql -u root -p -e "CREATE DATABASE book_collection CHARACTER SET utf8mb4"`
+3. 在 `.env` 中设置 `DATABASE_URL=mysql+pymysql://root:密码@localhost:3306/book_collection`
+4. 表结构会在首次启动时自动创建，或手动执行 `flask init-db`
 
 ## CLI 命令
 
@@ -113,14 +123,13 @@ python run.py
 
 ## 环境变量
 
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `SECRET_KEY` | ✅ | Flask 会话签名密钥 |
-| `DATABASE_URL` | ✅ | MySQL 连接字符串 |
-| `DEEPSEEK_API_KEY` | ✅ | DeepSeek AI API 密钥 |
-| `WEREAD_API_KEY` | 可选 | 微信读书 API 密钥（默认值） |
-| `FLASK_DEBUG` | 可选 | 设为 `1` 启用调试模式 |
-| `ADMIN_DEFAULT_PASSWORD` | 可选 | init-db 时默认管理员密码 |
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `SECRET_KEY` | 自动生成 | Flask 会话签名密钥 |
+| `DATABASE_URL` | SQLite | 数据库连接（设置此变量可切换 MySQL） |
+| `DEEPSEEK_API_KEY` | — | DeepSeek AI API 密钥（AI 功能需要，不设置不影响核心功能） |
+| `FLASK_DEBUG` | `0` | 设为 `1` 启用调试模式 |
+| `ADMIN_DEFAULT_PASSWORD` | `changeme` | init-db 时默认管理员密码 |
 
 ## API 路由
 

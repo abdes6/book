@@ -184,23 +184,27 @@ def stats():
         else:
             streak = 0
 
-    # ── 最活跃阅读日（按星期几分组统计平均阅读时长）──
-    weekday_names = ['', '周日', '周一', '周二', '周三', '周四', '周五', '周六']
-    weekday_rows = db.session.query(
-        func.dayofweek(DailyReadStat.date).label('dow'),
-        func.avg(DailyReadStat.total_read_time).label('avg_time')
-    ).filter(
+    # ── 最活跃阅读日（在 Python 端计算，兼容所有数据库）──
+    from collections import defaultdict
+    weekday_names = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    daily_for_weekday = DailyReadStat.query.filter(
         DailyReadStat.user_id == user_id,
         DailyReadStat.total_read_time > 0
-    ).group_by('dow').all()
+    ).all()
+    weekday_totals = defaultdict(int)
+    weekday_counts = defaultdict(int)
+    for r in daily_for_weekday:
+        dow = r.date.weekday()  # 0=周一, 6=周日
+        weekday_totals[dow] += r.total_read_time
+        weekday_counts[dow] += 1
     most_active_day = ''
     most_active_avg = 0
-    for row in weekday_rows:
-        idx = int(row.dow) if row.dow else 0
-        label = weekday_names[idx] if idx < len(weekday_names) else ''
-        if row.avg_time and float(row.avg_time) > most_active_avg:
-            most_active_avg = float(row.avg_time)
-            most_active_day = label
+    for dow in range(7):
+        if weekday_counts[dow] > 0:
+            avg = weekday_totals[dow] / weekday_counts[dow]
+            if avg > most_active_avg:
+                most_active_avg = avg
+                most_active_day = weekday_names[dow]
 
     # ── 阅读目标 ──
     now_dt = datetime.utcnow()
